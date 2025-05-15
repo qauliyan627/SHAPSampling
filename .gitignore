@@ -1,1 +1,11 @@
+shap_master
+adult
+Pic
+plot_data
+plot_data_X
+
 *.png
+*.csv
+*.json
+*.docx
+*.txt
