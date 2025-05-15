@@ -51,8 +51,6 @@ def transFun(z):
     transData = X_predictData.copy(deep=True)
     for i in range(len(z)):
         if z[i] == '0':
-            #print(transData.loc[0, columns[i]], midData.loc[0, columns[i]])
-            print(type(midData.loc[0, columns[i]]))
             transData.loc[:, columns[i]] = midData.loc[0, columns[i]]
     return transData
 
@@ -62,6 +60,7 @@ def weightFunc(subsetSize):
     #print(weightNum)
     return weightNum
 
+binToAnsDict = {}
 def objective_function(variables):
     varDict = {}
     for i in range(featureNum):
@@ -81,7 +80,12 @@ def objective_function(variables):
         for k in range(featureNum):
             if i_bin[k] == '1':
                 tempTerm += varDict[f"x{k}"]
-        term = ((predict(transData) - (tempTerm))**2)*weightFunc(i_bin.count('1'))
+        if i_bin in binToAnsDict.keys():
+            predictAns = binToAnsDict[i_bin]
+        else:
+            predictAns = predict(transData)
+            binToAnsDict[i_bin] = predictAns
+        term = ((predictAns - (tempTerm))**2)*weightFunc(i_bin.count('1'))
         total_sum += term
     return total_sum
 
@@ -113,7 +117,7 @@ def saveGapSampList(sampList):
     f.close()
 
 def randomSampling(samplingNum):
-    if samplingNum == 'max':return range(1, 2**featureNum-1)
+    if samplingNum == 'max': return range(1, 2**featureNum-1)
     samplingList = []
     while True:
         r = random.randint(1, 2**featureNum-1)
@@ -158,10 +162,10 @@ def GoldenSampling(samplingNum):
     return samplingList
 
 def aveFibSampling(samp):
+    FIB_LIST = [0,1,2,3,5,8,13,21,33,54]
     passList = [1,9,30]
     coverNumList =[]
     count = 0
-    FIB_LIST = [0,1,2,3,5,8,13,21,33,54]
     last = -1
     tempList = []
     intervalSize = 2**featureNum//samp
@@ -191,12 +195,17 @@ def aveFibSampling(samp):
     print(f"aveFibList: {tempList}")
     return tempList
 
+def pairedSampling(samp):
+    tempList = []
+    for i in range(2**featureNum//2, 2**featureNum):
+        pass
+
 # 全包含的SHAP值(精準SHAP值)
-ANS_LIST = [-0.07932989864247109, -0.07938996574848867, -0.0793634085821533, -0.0793892396058209, -0.07938264416386287, -0.07928658076617318, -0.0792978789151697, -0.07935561937152125, -0.07938196742866044, -0.07937382088674427, -0.07936567434473574]
-LOCATION = "SHAPFib\\SHAPtest\\plot_data\\"
+ANS_LIST = [-0.10743713601999705, 0.4198516820913887, -0.1871362529799483, -0.04834011330128862, -0.04659699356051017, -0.30819252728339197, -0.09294528711643413, -0.0030462765588805674, -0.12074284239519217, 0.00002968639930678, -0.37836063773085904]
+LOCATION = "plot_data\\"
 ROUND = 100 # 要計算幾次
-MODE = 0 # 隨機方法0, 黃金抽樣1, 平均費式2, 傳統費式3
-GAP_LIMIT = 1 # 保存上限設定值
+MODE = 1 # 隨機方法0, 傳統費式1, 黃金抽樣2, 平均費式3, 凸型費式4
+GAP_LIMIT = 0.5 # 保存上限設定值
 SAMPLING_NUM = 32 # 隨機選取特徵子集的數量32
 
 time_total = 0
@@ -224,11 +233,11 @@ for j in range(ROUND):
     if MODE == 0 or SAMPLING_NUM == "max":
         samplingList = randomSampling(SAMPLING_NUM)
     elif MODE == 1:
-        samplingList = GoldenSampling(SAMPLING_NUM)
-    elif MODE == 2:
-        samplingList = aveFibSampling(SAMPLING_NUM)
-    elif MODE == 3:
         samplingList = FibSampling(SAMPLING_NUM)
+    elif MODE == 2:
+        samplingList = GoldenSampling(SAMPLING_NUM)
+    elif MODE == 3:
+        samplingList = aveFibSampling(SAMPLING_NUM)
     
     time_end = time.time() # 抽樣結束時間
     samplingTime = time_end - time_start # 計算抽樣時間
@@ -241,7 +250,6 @@ for j in range(ROUND):
     constraints = ({'type': 'eq', 'fun': equality_constraint})
     options = {'maxiter': 10000}
     result = minimize(objective_function, initial_guess, constraints=constraints, method='SLSQP') # 計算SHAP值
-    
     time_end = time.time() # SHAP值計算結束時間
     if result.success:
         minimum_value = result.fun
@@ -250,10 +258,10 @@ for j in range(ROUND):
         print(f"找到最小值: {minimum_value}")
         featureStr = f"對應的變數值: x0 = {optimal_variables[0]}"
         resultTemp = []
+        resultTemp.append(optimal_variables[0])
         for i in range(1, featureNum): 
             resultTemp.append(optimal_variables[i])
             featureStr += f", x{i} = {optimal_variables[i]}"
-            print(f"x{i} = {optimal_variables[i]}")
         print(featureStr)
         print(f"中間預測值: {midPredict}")
         
@@ -300,5 +308,3 @@ if not MODE == 3:
     np.savetxt(f"{LOCATION}AllList_mode{MODE}_round{ROUND}.txt", allSampList)
     np.savetxt(f"{LOCATION}SpaceList_mode{MODE}_round{ROUND}.txt", allSpacList)
     np.savetxt(f"{LOCATION}AllShapValueList_mode{MODE}_round{ROUND}.txt", allShapValue)
-    
-    
