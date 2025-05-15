@@ -9,3 +9,5 @@ plot_data_X
 *.json
 *.docx
 *.txt
+
+test.py
