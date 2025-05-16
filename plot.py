@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-LOCATION = "SHAPFib\\SHAPtest\\plot_data\\"
+LOCATION = "SHAPSampling\\plot_data\\"
 
 class GetData:
     def mergeData(self, twList): # 轉為一維陣列
@@ -59,7 +59,7 @@ class ShapResultPlot:
                 else:
                     tempDict[f'{i}-{i+plotB-1}'] = tempDict.get(f'{i}-{i+plotB-1}', 0)+randomDict.get(j, 0)
         
-        plt.tick_params(axis='x', labelsize=20)
+        plt.tick_params(axis='x', labelsize=10)
         plt.xticks(rotation=-20)
         plt.bar(tempDict.keys(),tempDict.values())
         plt.show()
@@ -81,7 +81,7 @@ class ShapResultPlot:
         FeatureDict = a
         print(len(smpList)*len(smpList[0]))
         print(FeatureDict)
-        plt.tick_params(axis='x', labelsize=20)
+        plt.tick_params(axis='x', labelsize=10)
         plt.xticks(rotation=-20)
         plt.bar(FeatureDict.keys(),FeatureDict.values())
         plt.show()
@@ -103,22 +103,27 @@ def drowGapShapValue():
         plt.scatter(gapData, temp)
     plt.show()
     
-    
+def drowFeatureDistribution(listData): # 繪製出特徵分布狀態 AllList
+    for _ in range(100):
+        randNum = random.randint(0,len(listData)-1)
+        plt.bar(listData[randNum], range(len(listData[randNum])))
+    plt.show()
 
 SET_SIZE = 2**11
 
 getPlot = ShapResultPlot()
 getdata = GetData()
 
-# 隨機方法0, 黃金抽樣1, 平均費式2, 傳統費式3
-LISTNAME = "AllGapList" # AllList GapSampList SpaceList AllGapList
-MODE = 0
+# 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
+LISTNAME = "GapSampList" # AllList GapSampList SpaceList AllGapList
+MODE = 2
 ROUND = 100
 
 fileName = f"{LISTNAME}_mode{MODE}_round{ROUND}.txt"
-#fileName = "AllSamplingGapList.txt"
+fileName = "AllSamplingGapList.txt"
 
 data = getdata.txtListData(fileName)
-#getPlot.countListBar(data)
+#drowFeatureDistribution(data)
+getPlot.countListBar(data)
 #getPlot.countFeatureBar(data)
-drowGapShapValue()
+#drowGapShapValue()
