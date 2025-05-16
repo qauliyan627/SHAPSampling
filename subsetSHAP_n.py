@@ -275,8 +275,8 @@ def fibonacci(n):
 ANS_LIST = [-0.10743713601999705, 0.4198516820913887, -0.1871362529799483, -0.04834011330128862, -0.04659699356051017, -0.30819252728339197, -0.09294528711643413, -0.0030462765588805674, -0.12074284239519217, 0.00002968639930678, -0.37836063773085904]
 LOCATION = "SHAPSampling\\plot_data\\"
 ROUND = 100 # 要計算幾次
-MODE = 3 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
-GAP_LIMIT = 0.5 # 保存上限設定值
+MODE = 2 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
+GAP_LIMIT = 0.5916716280984426 # 保存上限設定值(mode4)
 SAMPLING_NUM = 32 # 隨機選取特徵子集的數量32
 
 time_total = 0
@@ -380,7 +380,7 @@ if not MODE == 1:
     if len(gapSampList) > 0:
         np.savetxt(f"{LOCATION}GapSampList_mode{MODE}_round{ROUND}.txt", gapSampList)
         np.savetxt(f"{LOCATION}GapSpacList_mode{MODE}_round{ROUND}.txt", gapSpacList)
-        saveGapSampList(gapSampList)
+        #saveGapSampList(gapSampList)
     np.savetxt(f"{LOCATION}AllGapList_mode{MODE}_round{ROUND}.txt", allGapList)
     np.savetxt(f"{LOCATION}AllList_mode{MODE}_round{ROUND}.txt", allSampList)
     np.savetxt(f"{LOCATION}SpaceList_mode{MODE}_round{ROUND}.txt", allSpacList)
