@@ -8,6 +8,5 @@ plot_data_X
 *.csv
 *.json
 *.docx
-*.txt
 
 test.py
