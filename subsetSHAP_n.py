@@ -129,21 +129,25 @@ def randomSampling(samplingNum):
             break
     return samplingList
 
-def FibSampling(samplingNum):
-    fibCount = 2
-    fibList = [1, 2]
-    for k in range(1, 2**featureNum-1):
-        fibNum = fibList[k]+fibList[k-1]
-        if fibNum > 2**featureNum-1:
-            break
-        fibList.append(fibNum)
-        fibCount+=1
-    # 反向抽取
-    tempList = fibList
-    for k in tempList:
-        if 2**featureNum - k not in fibList:
-            fibList.append(2**featureNum - k)
-    return fibList
+def FibSampling(samplingNum):# 凹型抽樣
+    i = 2
+    samplingList = [0]
+    while True:
+        temp = fibonacci(i)
+        if temp >= 2**featureNum: break
+        samplingList.append(temp)
+        i+=1
+    # 反向費氏
+    maxSampNum = 2**featureNum-1
+    if maxSampNum not in samplingList: samplingList.append(maxSampNum)
+    i = 2
+    while True:
+        temp = fibonacci(i)
+        if temp >= 2**featureNum: break
+        if maxSampNum - temp not in samplingList: samplingList.append(maxSampNum - temp)
+        i+=1
+    return samplingList
+
 
 GOLDEN_RATIO = 0.61803398875
 def GoldenSampling(samplingNum):
@@ -192,14 +196,28 @@ def aveFibSampling(samp):
     return tempList
 
 def pairedSampling(samp): # 凸型配對(左右對稱)
-    fibList = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987]
+    midNum = 2**featureNum//2
     temp = 0
-    tempList = []
-    for i in fibList:
-        temp = i + ((2**featureNum)//2)
+    tempList = [midNum]
+    # 抽樣
+    i = 2
+    while True:
+        temp = midNum + fibonacci(i)
+        if temp >= 2**featureNum: break
         tempList.append(temp)
-        temp = ((2**featureNum)//2) - 1 - i
-        tempList.append(temp)
+        i+=1
+    # 反向配對
+    for i in tempList:
+        tempStr = ""
+        i_bin = format(i, 'b')
+        i_bin = i_bin.zfill(featureNum)
+        # 反向二進位 01交換
+        for j in range(featureNum):
+            if i_bin[j] == '0': tempStr+='1'
+            else : tempStr+='0'
+        i_r = int(tempStr,2)
+        if i_r not in tempList: tempList.append(i_r)
+
     return tempList
 
 def stratifiedSampling(samp):
@@ -257,7 +275,7 @@ def fibonacci(n):
 ANS_LIST = [-0.10743713601999705, 0.4198516820913887, -0.1871362529799483, -0.04834011330128862, -0.04659699356051017, -0.30819252728339197, -0.09294528711643413, -0.0030462765588805674, -0.12074284239519217, 0.00002968639930678, -0.37836063773085904]
 LOCATION = "SHAPSampling\\plot_data\\"
 ROUND = 100 # 要計算幾次
-MODE = 5 # 隨機方法0, 傳統費式1, 黃金抽樣2, 平均費式3, 分層費式4
+MODE = 3 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
 GAP_LIMIT = 0.5 # 保存上限設定值
 SAMPLING_NUM = 32 # 隨機選取特徵子集的數量32
 
