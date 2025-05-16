@@ -127,7 +127,6 @@ def randomSampling(samplingNum):
             samplingList.append(r)
         if len(samplingList) >= samplingNum:
             break
-    print(f"randomList: {sorted(samplingList)}")
     return samplingList
 
 def FibSampling(samplingNum):
@@ -144,7 +143,6 @@ def FibSampling(samplingNum):
     for k in tempList:
         if 2**featureNum - k not in fibList:
             fibList.append(2**featureNum - k)
-    print(f"fibList: {sorted(fibList)}")
     return fibList
 
 GOLDEN_RATIO = 0.61803398875
@@ -158,7 +156,6 @@ def GoldenSampling(samplingNum):
         if last not in samplingList: samplingList.append(last)
         if len(samplingList) >= samplingNum:
             break
-    print(f"GoldenSampling: {sorted(samplingList)}")
     return samplingList
 
 def aveFibSampling(samp):
@@ -192,19 +189,75 @@ def aveFibSampling(samp):
                     ctu = False
                     continue
                 break
-    print(f"aveFibList: {tempList}")
     return tempList
 
-def pairedSampling(samp):
+def pairedSampling(samp): # 凸型配對(左右對稱)
+    fibList = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987]
+    temp = 0
     tempList = []
-    for i in range(2**featureNum//2, 2**featureNum):
-        pass
+    for i in fibList:
+        temp = i + ((2**featureNum)//2)
+        tempList.append(temp)
+        temp = ((2**featureNum)//2) - 1 - i
+        tempList.append(temp)
+    return tempList
+
+def stratifiedSampling(samp):
+    stratDict = {}
+    for i in range(1, 2**featureNum): # 製作分層Dict
+        i_bin = format(i, 'b')
+        i_bin = i_bin.zfill(featureNum)
+        oneCount = i_bin.count('1')
+        tempList = stratDict.get(oneCount, [])
+        tempList.append(i)
+        stratDict[oneCount] = tempList
+    # 取得個曾要抽的比例
+    sampRatio = []
+    total = 0
+    for i in range(1, featureNum):
+        sampRatio.append(len(stratDict[i]))
+        total+=sampRatio[i-1]
+    sampRatio = [x/total for x in sampRatio]
+    sampNum = [round(x*SAMPLING_NUM) for x in sampRatio]
+    # 開始抽樣
+    sampList = []
+    for i in range(1, featureNum):
+        maxFibNum = 0 # 最大可抽費數 F(n)
+        j = 2
+        while True:
+            if fibonacci(j) <= len(stratDict[i]):
+                j+=1
+            else:
+                j-=1
+                break
+        maxFibNum = j
+        for j in range(sampNum[i-1]):
+            while True:
+                temp = random.randint(2, maxFibNum)
+                if stratDict[i][temp] in sampList:
+                    continue
+                else:
+                    sampList.append(stratDict[i][temp])
+                    break
+    return sampList
+
+def fibonacci(n):
+    if n == 0: return 0
+    elif n == 1: return 1
+    elif n < 0: return -1
+    if n in fibonacciSeq.keys():
+        return fibonacciSeq[n]
+    else:
+        fn = fibonacci(n-1)
+        fm = fibonacci(n-2)
+        fibonacciSeq[n] = fn + fm
+        return fn + fm
 
 # 全包含的SHAP值(精準SHAP值)
 ANS_LIST = [-0.10743713601999705, 0.4198516820913887, -0.1871362529799483, -0.04834011330128862, -0.04659699356051017, -0.30819252728339197, -0.09294528711643413, -0.0030462765588805674, -0.12074284239519217, 0.00002968639930678, -0.37836063773085904]
 LOCATION = "SHAPSampling\\plot_data\\"
 ROUND = 100 # 要計算幾次
-MODE = 1 # 隨機方法0, 傳統費式1, 黃金抽樣2, 平均費式3, 凸型費式4
+MODE = 5 # 隨機方法0, 傳統費式1, 黃金抽樣2, 平均費式3, 分層費式4
 GAP_LIMIT = 0.5 # 保存上限設定值
 SAMPLING_NUM = 32 # 隨機選取特徵子集的數量32
 
@@ -221,6 +274,7 @@ allGapList = []
 allSampList = []
 allSpacList = [] # 抽選子集組的各子集距離
 allShapValue = [] # 記錄每次計算的SHAP值
+fibonacciSeq = {0:0, 1:1}
 if SAMPLING_NUM == "max": ROUND=1
 for j in range(ROUND):
     print(f"j={j}")
@@ -238,12 +292,17 @@ for j in range(ROUND):
         samplingList = GoldenSampling(SAMPLING_NUM)
     elif MODE == 3:
         samplingList = aveFibSampling(SAMPLING_NUM)
+    elif MODE == 4:
+        samplingList = pairedSampling(SAMPLING_NUM)
+    elif MODE == 5:
+        samplingList = stratifiedSampling(SAMPLING_NUM)
     
     time_end = time.time() # 抽樣結束時間
     samplingTime = time_end - time_start # 計算抽樣時間
     print(f"samplingTime: {samplingTime}")
     
     samplingList = sorted(samplingList) # 排序抽樣結果
+    print(f"samplingList={samplingList}")
     print(f"len: {len(samplingList)}")
     
     initial_guess = np.arange(featureNum)
@@ -287,9 +346,9 @@ for j in range(ROUND):
         sampling_time_total += samplingTime
     else:
         print(f"優化失敗: {result.message}")
-    if MODE == 3:
+    if MODE == 1:
         break
-if not MODE == 3:
+if not MODE == 1:
     print(f"此為mode{MODE}, 總做了{ROUND}次")
     print(f"平均抽樣時間(s): {sampling_time_total/ROUND}s")
     print(f"平均時間(s): {time_total/ROUND}s")
