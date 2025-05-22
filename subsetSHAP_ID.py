@@ -16,16 +16,20 @@ def startSet(): # import dataset
     # Feature Engineering
     X = uciDataset.data.features
     y = uciDataset.data.targets
-    
+    print(X)
+    '''
     if ID[DATASET] == 1:
         X['Sex'].replace(['M', 'F', 'I'], [0, 1, 2], inplace=True)
         print(X)
     elif ID[DATASET] == 544:
-        cat_columns = X.select_dtypes(['object']).columns
+    '''
+    cat_columns = X.select_dtypes(['object']).columns
+    if len(cat_columns) > 0:
         for cc in cat_columns:
             codes, uniques = pd.factorize(X[cc])
             X[cc] = codes
-        cat_columns = y.select_dtypes(['object']).columns
+    cat_columns = y.select_dtypes(['object']).columns
+    if len(cat_columns) > 0:
         for cc in cat_columns:
             codes, uniques = pd.factorize(y[cc])
             y[cc] = codes
@@ -323,7 +327,7 @@ def getANSandGAP(sampling_num): # 計算ANS_LIST, 計算GAP_LIMIT(COMP_MODE)
     else:
         print(f"優化失敗: {result.message}")
 
-DATASET = 0 # 選擇資料集
+DATASET = 1 # 選擇資料集
 ID = [186, 519, 563, 1, 165, 60, 544]
 EXPLAIN_DATA = 1 # 選擇要解釋第幾筆資料(單筆解釋)
 MODE = 2 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣(低序列差異)2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
@@ -367,15 +371,19 @@ model = Model()
 ansPredict, midPredict = model.predictDataSet()
 
 reCalcu = False #是否重新計算ANS_LIST
-if not os.path.exists(f"{LOCATION}\\ANS\\ans_{EXPLAIN_DATA}.txt") or reCalcu:
+ansPath = f"{LOCATION}\\ANS"
+if not os.path.exists(ansPath): os.makedirs(ansPath)
+if not os.path.exists(ansPath + f"\\ans_{EXPLAIN_DATA}.txt") or reCalcu:
     samplingList = sampling("max")
     ANS_LIST = getANSandGAP("max")
-else: ANS_LIST = np.loadtxt(f"{LOCATION}\\ANS\\ans_{EXPLAIN_DATA}.txt") # 全包含的SHAP值(精準SHAP值)
-if not os.path.exists(f"{LOCATION}\\GAP\\gap_mode{COMP_MODE}.npy"): 
+else: ANS_LIST = np.loadtxt(ansPath + f"\\ans_{EXPLAIN_DATA}.txt") # 全包含的SHAP值(精準SHAP值)
+gapPath = f"{LOCATION}\\GAP"
+if not os.path.exists(gapPath): os.makedirs(gapPath)
+if not os.path.exists(gapPath + f"\\gap_mode{COMP_MODE}.npy"): 
     samplingList = sampling("COMP_MODE")
     GAP_LIMIT = getANSandGAP("COMP_MODE")
 else:
-    with open(f"{LOCATION}\\GAP\\gap_mode{COMP_MODE}.npy", 'rb') as file:
+    with open(gapPath + f"\\gap_mode{COMP_MODE}.npy", 'rb') as file:
         GAP_LIMIT = np.load(file, allow_pickle=True).item() # 字典[EXPLAIN_DATA] 保存上限設定值(mode4)
     if GAP_LIMIT.get(EXPLAIN_DATA, -1) <= 0:
         samplingList = sampling("COMP_MODE")
