@@ -272,12 +272,14 @@ def fibonacci(n):
         return fn + fm
 
 # 全包含的SHAP值(精準SHAP值)
-ANS_LIST = [-0.10743713601999705, 0.4198516820913887, -0.1871362529799483, -0.04834011330128862, -0.04659699356051017, -0.30819252728339197, -0.09294528711643413, -0.0030462765588805674, -0.12074284239519217, 0.00002968639930678, -0.37836063773085904]
+ANS_LIST = [-0.10743713601999705, 0.4198516820913887, -0.1871362529799483, -0.04834011330128862, -0.04659699356051017, 
+            -0.30819252728339197, -0.09294528711643413, -0.0030462765588805674, -0.12074284239519217, 2.9686399306783073e-05, 
+            -0.37836063773085904]
 LOCATION = "SHAPSampling\\plot_data\\"
 ROUND = 100 # 要計算幾次
 MODE = 2 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
 GAP_LIMIT = 0.5916716280984426 # 保存上限設定值(mode4)
-SAMPLING_NUM = 32 # 隨機選取特徵子集的數量32
+SAMPLING_NUM = "max" # 隨機選取特徵子集的數量32
 
 time_total = 0
 sampling_time_total = 0
@@ -364,9 +366,9 @@ for j in range(ROUND):
         sampling_time_total += samplingTime
     else:
         print(f"優化失敗: {result.message}")
-    if MODE == 1:
+    if MODE == 1 or MODE == 4:
         break
-if not MODE == 1:
+if not MODE == 1 and not MODE == 4 and not SAMPLING_NUM == "max":
     print(f"此為mode{MODE}, 總做了{ROUND}次")
     print(f"平均抽樣時間(s): {sampling_time_total/ROUND}s")
     print(f"平均時間(s): {time_total/ROUND}s")
