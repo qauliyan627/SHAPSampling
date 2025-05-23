@@ -7,22 +7,25 @@ from scipy.optimize import minimize
 import numpy as np
 import pandas as pd
 
-from sklearn.model_selection import train_test_split
 from ucimlrepo import fetch_ucirepo
+import kagglehub
+from sklearn.model_selection import train_test_split
 import xgboost as xgb
 
+os.environ["KAGGLEHUB_CACHE"] = "D:\Code\SHAPSampling\kaggle"
+path = kagglehub.dataset_download("amldvvs/avocado-ripeness-classification-dataset")
+print("Path to dataset files:", path)
+hat_speech_curated = pd.read_csv(path)
+
 def startSet(): # import dataset
-    uciDataset = fetch_ucirepo(id=ID[DATASET])
+    path = kagglehub.dataset_download("amldvvs/avocado-ripeness-classification-dataset")
+    print("Path to dataset files:", path)
+
     # Feature Engineering
     X = uciDataset.data.features
     y = uciDataset.data.targets
     print(X)
-    '''
-    if ID[DATASET] == 1:
-        X['Sex'].replace(['M', 'F', 'I'], [0, 1, 2], inplace=True)
-        print(X)
-    elif ID[DATASET] == 544:
-    '''
+
     cat_columns = X.select_dtypes(['object']).columns
     if len(cat_columns) > 0:
         for cc in cat_columns:
@@ -327,12 +330,8 @@ def getANSandGAP(sampling_num): # 計算ANS_LIST, 計算GAP_LIMIT(COMP_MODE)
     else:
         print(f"優化失敗: {result.message}")
 
-<<<<<<< HEAD
-DATASET = 4 # 選擇資料集
-=======
-DATASET = 1 # 選擇資料集
->>>>>>> edd249a5b276d12de8013ecb94778e2cf20f31fa
-ID = [186, 519, 563, 1, 165, 60, 544]
+ID = 0 # 選擇資料集
+DATASET_NAME = [] # 資料集集合
 EXPLAIN_DATA = 1 # 選擇要解釋第幾筆資料(單筆解釋)
 MODE = 2 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣(低序列差異)2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
 COMP_MODE = 4
@@ -340,7 +339,7 @@ COMP_MODE = 4
 SAMPLING_NUM = [32, 34, 36, 22, 22, 14, 50]
 ROUND = 100 # 要計算幾次
 GOLDEN_RATIO = 0.61803398875
-LOCATION = f"SHAPSampling\\plot_data\\{ID[DATASET]}"
+LOCATION = f"SHAPSampling\\kaggle\\{DATASET_NAME[ID]}"
 GAP_LIMIT = dict()
 
 samplingList = []
@@ -365,7 +364,6 @@ dtypeDict = X_train.dtypes.apply(lambda x: x.name).to_dict()
 # Number of features(M)
 columns = X_train.columns.tolist()
 featureNum = len(columns)
-if SAMPLING_NUM[DATASET] >= 2**featureNum: SAMPLING_NUM[DATASET] = 2**featureNum-1
 # predict data
 X_predictData = X_test.iloc[[EXPLAIN_DATA]]
 midData = pd.DataFrame([X_test.median()])
@@ -395,6 +393,7 @@ else:
 print("ANS_LIST=",ANS_LIST)
 print("GAP_LIMIT=",GAP_LIMIT)
 
+if SAMPLING_NUM[DATASET] >= 2**featureNum: SAMPLING_NUM[DATASET] = 2**featureNum-1
 for j in range(ROUND):
     print(f"j={j}")
     
