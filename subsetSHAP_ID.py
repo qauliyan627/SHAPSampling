@@ -323,7 +323,7 @@ def getANSandGAP(sampling_num): # 計算ANS_LIST, 計算GAP_LIMIT(COMP_MODE)
     else:
         print(f"優化失敗: {result.message}")
 
-DATASET = 0 # 選擇資料集
+DATASET = 4 # 選擇資料集
 ID = [186, 519, 563, 1, 165, 60, 544]
 EXPLAIN_DATA = 1 # 選擇要解釋第幾筆資料(單筆解釋)
 MODE = 2 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣(低序列差異)2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
