@@ -296,6 +296,9 @@ def sampling(sampling_num, mode=0):
         samplingList = pairedSampling()
     elif mode == 5:
         samplingList = stratifiedSampling()
+    elif mode == 6:
+        samplingList = ldFibSampling(sampling_num)
+    
     time_end = time.time() # 抽樣結束時間
     samplingTime = time_end - time_start # 計算抽樣時間
     samplingList.sort()
@@ -327,17 +330,56 @@ def getANSandGAP(sampling_num): # 計算ANS_LIST, 計算GAP_LIMIT(COMP_MODE)
     else:
         print(f"優化失敗: {result.message}")
 
-<<<<<<< HEAD
-DATASET = 4 # 選擇資料集
-=======
-DATASET = 1 # 選擇資料集
->>>>>>> edd249a5b276d12de8013ecb94778e2cf20f31fa
+def ldFibSampling(samp):
+    top = 2**featureNum//2-1
+    but = 2**featureNum
+    tempList = [top, but]
+    n_top = top
+    n_but = but
+    for _ in range(samp//2):
+        # 計算最大可用費氏數
+        ran = n_but - n_top - 1
+        maxFib = 0
+        while True:
+            if ran < fibonacci(maxFib):
+                maxFib -= 1
+                break
+            else: maxFib += 1
+        # 抽樣
+        ranFib = fibonacci(random.randint(1, maxFib))
+        tempList.append(n_top + ranFib)
+        tempList.sort()
+        # 找尋最大間距
+        maxRange = 0
+        for i in range(1, len(tempList)):
+            t_top = tempList[i-1]
+            t_but = tempList[i]
+            if maxRange < t_but-t_top:
+                n_top = t_top
+                n_but = t_but
+                maxRange = t_but-t_top
+    tempList.remove(top)
+    tempList.remove(but)
+    for i in tempList:
+        tempStr = ""
+        i_bin = format(i, 'b')
+        i_bin = i_bin.zfill(featureNum)
+        # 反向二進位 01交換
+        for j in range(featureNum):
+            if i_bin[j] == '0': tempStr+='1'
+            else : tempStr+='0'
+        i_r = int(tempStr,2)
+        if i_r not in tempList: tempList.append(i_r)
+    tempList.sort()
+    return tempList
+
+DATASET = 0 # 選擇資料集
 ID = [186, 519, 563, 1, 165, 60, 544]
 EXPLAIN_DATA = 1 # 選擇要解釋第幾筆資料(單筆解釋)
-MODE = 2 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣(低序列差異)2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
+MODE = 6 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣(低序列差異)2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
 COMP_MODE = 4
-# 隨機選取特徵子集的數量: 32, 34, 36, 22, 22, 14(mode4)
-SAMPLING_NUM = [32, 34, 36, 22, 22, 14, 50]
+# 隨機選取特徵子集的數量: 32, 34, 36, 22, 22, 14, 32(mode4)
+SAMPLING_NUM = [32, 34, 36, 22, 22, 14, 50, 32]
 ROUND = 100 # 要計算幾次
 GOLDEN_RATIO = 0.61803398875
 LOCATION = f"SHAPSampling\\plot_data\\{ID[DATASET]}"
