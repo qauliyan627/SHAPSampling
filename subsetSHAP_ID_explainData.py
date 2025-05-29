@@ -268,6 +268,38 @@ def stratifiedSampling():
     return sampList
 
 def ldFibSampling(samp):
+    top = 0
+    but = 2**featureNum
+    tempList = [top, but]
+    n_top = top
+    n_but = but
+    for _ in range(samp):
+        # 計算最大可用費氏數
+        ran = n_but - n_top - 1
+        maxFib = 0
+        while True:
+            if ran < fibonacci(maxFib):
+                maxFib -= 1
+                break
+            else: maxFib += 1
+        # 抽樣
+        ranFib = fibonacci(random.randint(1, maxFib))
+        tempList.append(n_top + ranFib)
+        tempList.sort()
+        # 找尋最大間距
+        maxRange = 0
+        for i in range(1, len(tempList)):
+            t_top = tempList[i-1]
+            t_but = tempList[i]
+            if maxRange < t_but-t_top:
+                n_top = t_top
+                n_but = t_but
+                maxRange = t_but-t_top
+    tempList.remove(top)
+    tempList.remove(but)
+    return tempList
+
+def ldFibSampling_p(samp):
     top = 2**featureNum//2-1
     but = 2**featureNum
     tempList = [top, but]
@@ -521,6 +553,8 @@ for _ in range(explainRand):
         if gap_total/ROUND < GAP_LIMIT[EXPLAIN_DATA]:
             countAll += 1
         avgAll += gap_total/ROUND
+    else:
+        avgAll += gap
     EXPLAIN_DATA += 1
 print("countAll =",countAll)
 print("avgAll =", avgAll/explainRand)
