@@ -2,7 +2,8 @@ shap_master
 adult
 Pic
 plot_data
-plot_data_X
+kaggle_data
+
 
 *.png
 *.csv
