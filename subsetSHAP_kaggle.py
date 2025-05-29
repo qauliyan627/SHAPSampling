@@ -12,20 +12,13 @@ import kagglehub
 from sklearn.model_selection import train_test_split
 import xgboost as xgb
 
-os.environ["KAGGLEHUB_CACHE"] = "D:\Code\SHAPSampling\kaggle"
-path = kagglehub.dataset_download("amldvvs/avocado-ripeness-classification-dataset")
-print("Path to dataset files:", path)
-hat_speech_curated = pd.read_csv(path)
-
 def startSet(): # import dataset
-    path = kagglehub.dataset_download("amldvvs/avocado-ripeness-classification-dataset")
-    print("Path to dataset files:", path)
-
-    # Feature Engineering
-    X = uciDataset.data.features
-    y = uciDataset.data.targets
-    print(X)
-
+    dataPath = DATASETS_LOC
+    dataName = DATASET_NAME[ID]
+    data = pd.read_csv(dataPath + dataName + ".csv")
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1].to_frame()
+    
     cat_columns = X.select_dtypes(['object']).columns
     if len(cat_columns) > 0:
         for cc in cat_columns:
@@ -126,7 +119,7 @@ def getSpac(spList):
     return spacList
 
 def saveGapSampList(sampList):
-    with open(f"{LOCATION}ALLsamplingGapList.txt", 'a') as f:
+    with open(f"{LOCATION}\\ALLsamplingGapList.txt", 'a') as f:
         np.savetxt(f,sampList)
     f.close()
 
@@ -183,7 +176,7 @@ def aveFibSampling(samp):
     intervalSize = 2**featureNum//samp
     for _ in range(len(passList)): 
         while True:
-            temp = random.randint(1,SAMPLING_NUM[DATASET])
+            temp = random.randint(1,SAMPLING_NUM[ID])
             if temp in coverNumList or temp in passList: continue
             coverNumList.append(temp)
             break
@@ -247,7 +240,7 @@ def stratifiedSampling():
         sampRatio.append(len(stratDict[i]))
         total+=sampRatio[i-1]
     sampRatio = [x/total for x in sampRatio]
-    sampNum = [round(x*SAMPLING_NUM[DATASET]) for x in sampRatio]
+    sampNum = [round(x*SAMPLING_NUM[ID]) for x in sampRatio]
     # 開始抽樣
     sampList = []
     for i in range(1, featureNum):
@@ -330,16 +323,17 @@ def getANSandGAP(sampling_num): # 計算ANS_LIST, 計算GAP_LIMIT(COMP_MODE)
     else:
         print(f"優化失敗: {result.message}")
 
+DATASETS_LOC = "SHAPSampling\\Datasets\\"
 ID = 0 # 選擇資料集
-DATASET_NAME = [] # 資料集集合
-EXPLAIN_DATA = 1 # 選擇要解釋第幾筆資料(單筆解釋)
-MODE = 2 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣(低序列差異)2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
+DATASET_NAME = ["heart"] # 資料集集合
+EXPLAIN_DATA = 5 # 選擇要解釋第幾筆資料(單筆解釋)
+MODE = 0 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣(低序列差異)2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
 COMP_MODE = 4
-# 隨機選取特徵子集的數量: 32, 34, 36, 22, 22, 14(mode4)
-SAMPLING_NUM = [32, 34, 36, 22, 22, 14, 50]
+# 隨機選取特徵子集的數量(mode4)
+SAMPLING_NUM = [32]
 ROUND = 100 # 要計算幾次
 GOLDEN_RATIO = 0.61803398875
-LOCATION = f"SHAPSampling\\kaggle\\{DATASET_NAME[ID]}"
+LOCATION = f"SHAPSampling\\kaggle_data\\{DATASET_NAME[ID]}"
 GAP_LIMIT = dict()
 
 samplingList = []
@@ -366,7 +360,7 @@ columns = X_train.columns.tolist()
 featureNum = len(columns)
 # predict data
 X_predictData = X_test.iloc[[EXPLAIN_DATA]]
-midData = pd.DataFrame([X_test.median()])
+midData = pd.DataFrame([X_train.median()])
 midData = midData.astype(dtypeDict)
 
 model = Model()
@@ -393,13 +387,13 @@ else:
 print("ANS_LIST=",ANS_LIST)
 print("GAP_LIMIT=",GAP_LIMIT)
 
-if SAMPLING_NUM[DATASET] >= 2**featureNum: SAMPLING_NUM[DATASET] = 2**featureNum-1
+if SAMPLING_NUM[ID] >= 2**featureNum: SAMPLING_NUM[ID] = 2**featureNum-1
 for j in range(ROUND):
     print(f"j={j}")
     
     # samplingList: 特徵子集抽樣 array = 1~2**featureNum-1
-    print(f"SAMPLING_NUM = {SAMPLING_NUM[DATASET]}")
-    samplingList = sampling(SAMPLING_NUM[DATASET], MODE)
+    print(f"SAMPLING_NUM = {SAMPLING_NUM[ID]}")
+    samplingList = sampling(SAMPLING_NUM[ID], MODE)
     
     initial_guess = np.arange(featureNum)
     constraints = ({'type': 'eq', 'fun': equality_constraint})
@@ -410,7 +404,7 @@ for j in range(ROUND):
     if result.success:
         minimum_value = result.fun
         optimal_variables = result.x
-        if SAMPLING_NUM[DATASET] == "max" and len(ANS_LIST) == 0:
+        if SAMPLING_NUM[ID] == "max" and len(ANS_LIST) == 0:
             np.savetxt(f"{LOCATION}\\ANS\\ans_{EXPLAIN_DATA}.txt", optimal_variables)
             ANS_LIST = np.loadtxt(f"{LOCATION}\\ANS\\ans_{EXPLAIN_DATA}.txt")
         
@@ -452,7 +446,7 @@ for j in range(ROUND):
     if MODE == 1 or MODE == 4:
         break
 if not MODE == 1 and not MODE == 4:
-    print(f"此為ID{ID[DATASET]}資料集, 解釋第{EXPLAIN_DATA}筆資料, mode{MODE}, 抽樣{SAMPLING_NUM[DATASET]}個, 總做了{ROUND}次")
+    print(f"此為{DATASET_NAME[ID]}資料集, 解釋第{EXPLAIN_DATA}筆資料, mode{MODE}, 抽樣{SAMPLING_NUM[ID]}個, 總做了{ROUND}次")
     print(f"平均抽樣時間(s): {sampling_time_total/ROUND}s")
     print(f"平均時間(s): {time_total/ROUND}s")
     print(f"平均差距: {gap_total/ROUND}")
