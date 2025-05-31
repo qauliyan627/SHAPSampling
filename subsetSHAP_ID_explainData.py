@@ -373,10 +373,10 @@ def getANSandGAP(sampling_num): # 計算ANS_LIST, 計算GAP_LIMIT(COMP_MODE)
     else:
         print(f"優化失敗: {result.message}")
 
-DATASET = 0 # 選擇資料集
+DATASET = 1 # 選擇資料集
 ID = [186, 519, 563, 1, 165, 60, 544]
 EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
-MODE = 6 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣(低序列差異)2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
+MODE = 2 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣(低序列差異)2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
 COMP_MODE = 4
 # 隨機選取特徵子集的數量: 32, 34, 36, 22, 22, 14(mode4)
 SAMPLING_NUM = [32, 34, 36, 22, 22, 14, 50]
@@ -520,7 +520,7 @@ for _ in range(explainRand):
         
         if gap_total/ROUND < GAP_LIMIT[EXPLAIN_DATA]:
             countAll += 1
-        avgAll += gap_total/ROUND
+    avgAll += gap_total/ROUND
     EXPLAIN_DATA += 1
 print("countAll =",countAll)
 print("avgAll =", avgAll/explainRand)
