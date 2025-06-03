@@ -7,6 +7,7 @@ from scipy.optimize import minimize
 import numpy as np
 import pandas as pd
 
+import shap
 from sklearn.model_selection import train_test_split
 from ucimlrepo import fetch_ucirepo
 import xgboost as xgb
@@ -61,6 +62,12 @@ class Model():
         prediction_pandas = self.model.predict(data)[0]
         #print(f"predict: {prediction_pandas}")
         return prediction_pandas   
+
+def getExactSHAP(model):
+    explainer = shap.TreeExplainer(model, X_train)
+    shap_values = explainer(X_predictData)
+    np.savetxt(f"{LOCATION}\\ANS\\ans_{EXPLAIN_DATA}.txt", shap_values[0].values)
+    return shap_values[0].values
 
 def transFun(z): # transiton: h()
     transData = X_predictData.copy(deep=True)
@@ -281,10 +288,9 @@ def fibonacci(n):
 
 def sampling(sampling_num, mode=0):
     time_start = time.time() # 開始計算時間
-    if sampling_num == "COMP_MODE": mode = COMP_MODE
-    if sampling_num == "max":
-        samplingList = list(range(1, 2**featureNum-1))
-    elif mode == 0: 
+    if sampling_num == "COMP_MODE":
+        mode = COMP_MODE
+    if mode == 0: 
         samplingList = randomSampling(sampling_num)
     elif mode == 1:
         samplingList = FibSampling(sampling_num)
@@ -307,7 +313,7 @@ def sampling(sampling_num, mode=0):
     print(f"len: {len(samplingList)}")
     return samplingList
     
-def getANSandGAP(sampling_num): # 計算ANS_LIST, 計算GAP_LIMIT(COMP_MODE)
+def getGAP(sampling_num): # 計算ANS_LIST, 計算GAP_LIMIT(COMP_MODE)
     initial_guess = np.arange(featureNum)
     constraints = ({'type': 'eq', 'fun': equality_constraint})
     options = {'maxiter': 10000}
@@ -317,16 +323,12 @@ def getANSandGAP(sampling_num): # 計算ANS_LIST, 計算GAP_LIMIT(COMP_MODE)
     print(f"計算時間={time_end - time_start}")
     if result.success:
         optimal_variables = result.x
-        if sampling_num == "max":
-            np.savetxt(f"{LOCATION}\\ANS\\ans_{EXPLAIN_DATA}.txt", optimal_variables)
-            return np.loadtxt(f"{LOCATION}\\ANS\\ans_{EXPLAIN_DATA}.txt")
-
         gap = getGap(optimal_variables) # 取得和精準SHAP值之間的差距
-        if sampling_num == "COMP_MODE": # 沒有檔案，保存GAP_LIMIT
-            print("= "*10)
-            GAP_LIMIT[EXPLAIN_DATA] = gap
-            np.save(f"{LOCATION}\\GAP\\gap_mode{COMP_MODE}.npy", GAP_LIMIT)
-            return np.load(f"{LOCATION}\\GAP\\gap_mode{COMP_MODE}.npy", allow_pickle=True).item()
+        
+        print("= "*10)
+        GAP_LIMIT[EXPLAIN_DATA] = gap
+        np.save(f"{LOCATION}\\GAP\\gap_mode{COMP_MODE}.npy", GAP_LIMIT)
+        return np.load(f"{LOCATION}\\GAP\\gap_mode{COMP_MODE}.npy", allow_pickle=True).item()
     else:
         print(f"優化失敗: {result.message}")
 
@@ -373,9 +375,9 @@ def ldFibSampling(samp):
     tempList.sort()
     return tempList
 
-DATASET = 0 # 選擇資料集
+DATASET = 1 # 選擇資料集
 ID = [186, 519, 563, 1, 165, 60, 544]
-EXPLAIN_DATA = 1 # 選擇要解釋第幾筆資料(單筆解釋)
+EXPLAIN_DATA = 2 # 選擇要解釋第幾筆資料(單筆解釋)
 MODE = 6 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣(低序列差異)2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
 COMP_MODE = 4
 # 隨機選取特徵子集的數量: 32, 34, 36, 22, 22, 14, 32(mode4)
@@ -420,20 +422,19 @@ reCalcu = False #是否重新計算ANS_LIST
 ansPath = f"{LOCATION}\\ANS"
 if not os.path.exists(ansPath): os.makedirs(ansPath)
 if not os.path.exists(ansPath + f"\\ans_{EXPLAIN_DATA}.txt") or reCalcu:
-    samplingList = sampling("max")
-    ANS_LIST = getANSandGAP("max")
+    ANS_LIST = getExactSHAP(model.model)
 else: ANS_LIST = np.loadtxt(ansPath + f"\\ans_{EXPLAIN_DATA}.txt") # 全包含的SHAP值(精準SHAP值)
 gapPath = f"{LOCATION}\\GAP"
 if not os.path.exists(gapPath): os.makedirs(gapPath)
 if not os.path.exists(gapPath + f"\\gap_mode{COMP_MODE}.npy"): 
     samplingList = sampling("COMP_MODE")
-    GAP_LIMIT = getANSandGAP("COMP_MODE")
+    GAP_LIMIT = getGAP("COMP_MODE")
 else:
     with open(gapPath + f"\\gap_mode{COMP_MODE}.npy", 'rb') as file:
         GAP_LIMIT = np.load(file, allow_pickle=True).item() # 字典[EXPLAIN_DATA] 保存上限設定值(mode4)
     if GAP_LIMIT.get(EXPLAIN_DATA, -1) <= 0:
         samplingList = sampling("COMP_MODE")
-        GAP_LIMIT = getANSandGAP("COMP_MODE")
+        GAP_LIMIT = getGAP("COMP_MODE")
 print("ANS_LIST=",ANS_LIST)
 print("GAP_LIMIT=",GAP_LIMIT)
 
