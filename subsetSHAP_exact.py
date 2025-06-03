@@ -371,7 +371,7 @@ ansPredict, midPredict = model.predictDataSet()
 masker = shap.maskers.Independent(data = X_train)
 explainer = shap.ExactExplainer(model.model.predict, masker)
 shap_values = explainer(X_predictData)
-print(shap_values)
+print(type(shap_values) ,shap_values)
 shap.plots.waterfall(shap_values[0])
 
 reCalcu = False #是否重新計算ANS_LIST
