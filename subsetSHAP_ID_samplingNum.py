@@ -456,7 +456,7 @@ EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
 MODE = 0 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣(低序列差異)2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
 COMP_MODE = 4
 # 選取特徵子集的數量
-SAMPLING_NUM = 10
+SAMPLING_NUM = 160
 ROUND = 100 # 要計算幾次
 GOLDEN_RATIO = 0.61803398875
 LOCATION = f"SHAPSampling\\plot_data\\{ID[DATASET]}"
@@ -466,7 +466,7 @@ maxGap = 0
 maxGapSampNum = 0
 minGap = 10000
 minGapSampNum = 0
-all_SAMPLING_NUM_gapList = []
+all_SAMPLING_NUM_gapList = {}
 sampAdd = 20
 while True:
     samplingList = []
@@ -603,9 +603,9 @@ while True:
     if gap_total/ROUND < minGap: 
         minGap = gap_total/ROUND
         minGapSampNum = SAMPLING_NUM
-    all_SAMPLING_NUM_gapList.append(gap_total/ROUND)
+    all_SAMPLING_NUM_gapList[len(samplingList)] = gap_total/ROUND
     SAMPLING_NUM *= 2
-    if SAMPLING_NUM >= 100: break
+    if SAMPLING_NUM >= 650: break
 print(f"all_SAMPLING_NUM_gapList = {all_SAMPLING_NUM_gapList}")
 print(f"maxGap = {maxGap}, maxGapSampNum = {maxGapSampNum}")
 print(f"minGap = {minGap}, minGapSampNum = {minGapSampNum}")
