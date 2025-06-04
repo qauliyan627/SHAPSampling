@@ -465,6 +465,7 @@ GAP_LIMIT = dict()
 countAll = 0
 avgAll = 0
 explainRand = 50
+mode4Add = 0
 for _ in range(explainRand):
     samplingList = []
     binToAnsDict = {} # 紀錄已計算的預測結果
@@ -596,7 +597,9 @@ for _ in range(explainRand):
         
         if gap_total/ROUND < GAP_LIMIT[EXPLAIN_DATA]:
             countAll += 1
+    mode4Add += GAP_LIMIT[EXPLAIN_DATA]
     avgAll += gap_total/ROUND
     EXPLAIN_DATA += 1
 print("countAll =",countAll)
 print("avgAll =", avgAll/explainRand)
+print("avg_mode4 =", mode4Add/explainRand)
