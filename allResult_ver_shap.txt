@@ -100,6 +100,7 @@
             小於3.494536882286293的次數: 2
 
 - Wine Quality(186) #11 -- 32
+    mode4 avgAll = 1.0266860317484074
     mode0
         countAll = 12
         avgAll = 1.2592862595164174
@@ -128,6 +129,7 @@
         
 
 - Heart Failure Clinical Records(519) #12 -- 34
+    mode4 avgAll = 1.0266860317484074
     mode0
         countAll = 24
         avgAll = 0.46417572958526226
