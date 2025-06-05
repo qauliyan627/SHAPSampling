@@ -12,10 +12,10 @@
         avgAll = 0.9403486610972388
         
 - Heart Failure Clinical Records(519) #12 -- 34
-    mode4 avgAll = 0.6902444316193893
+    mode4 avgAll = 0.6958362028069918
     mode0
-        countAll = 24
-        avgAll = 0.46417572958526226
+        countAll = 29
+        avgAll = 0.7220562086865754
     mode2
         countAll = 32
         avgAll = 0.39887491306382494
