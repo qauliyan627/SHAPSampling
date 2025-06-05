@@ -159,15 +159,27 @@ def FibSampling(): # mode1: 使用費氏數列的凹型抽樣
     return samplingList
 
 def GoldenSampling(samplingNum): # mode2: 使用黃金比例的低差異序列抽樣
+    totalSetNum = 2**featureNum-1
+    count = 0
     samplingList = []
-    last = random.randint(1, 2**featureNum-1)
-    samplingList.append(last)
-    while True:
-        next = math.fmod((last - 1) / (2**featureNum-1) + GOLDEN_RATIO, 1.0)
-        last = math.floor(next * (2**featureNum-1)) + 1
-        if last not in samplingList: samplingList.append(last)
-        if len(samplingList) >= samplingNum:
+    index = random.randint(0, totalSetNum)
+    index = math.fmod(GOLDEN_RATIO * index, 1.0)
+    i = int(index * (totalSetNum - 1) + 1)
+    samplingList.append(i)
+    last = index
+    for _ in range(samplingNum-1):
+        while True:
+            last = math.fmod(last + GOLDEN_RATIO, 1.0)
+            i = int(last * (totalSetNum - 1) + 1)
+            if i in samplingList:
+                count += 1
+                print("continue")
+                continue
+            samplingList.append(i)
+            #print(samplingList)
             break
+    
+    print("continue c:", count)
     return samplingList
 
 def aveFibSampling(samp): # mode3: 分割區間使用費氏數列
@@ -283,8 +295,11 @@ def ldFibSampling(samp): # mode6: 費氏數列 + 低差異序列想法(挑選最
                 break
             else: maxFib += 1
         # 抽樣
-        ranFib = fibonacci(random.randint(1, maxFib))
-        tempList.append(n_top + ranFib)
+        while True:
+            ranFib = fibonacci(random.randint(1, maxFib))
+            if n_top + ranFib not in tempList:
+                tempList.append(n_top + ranFib)
+                break
         tempList.sort()
         # 找尋最大間距
         maxRange = 0
@@ -459,15 +474,15 @@ def mainFunc():
 
 if __name__=='__main__':
     LOOPNUM = 1 # 解釋資料數量
-    DATASET = 2 # 選擇資料集
+    DATASET = 1 # 選擇資料集
     ID = [186, 519, 563, 1, 165, 60, 544]
     EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
-    MODE = 0 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣(低序列差異)2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
+    MODE = 6 # 隨機方法0, 傳統費氏(凹型)1, 黃金抽樣(低序列差異)2, 平均費氏3, 對稱費氏(凸型)4, 分層費氏5
     COMP_MODE = 4
     # 隨機選取特徵子集的數量: 32, 34, 36, 22, 22, 14, 32(mode4)
     SAMPLING_NUM = [32, 34, 36, 22, 22, 14, 50, 32]
     ROUND = 100 # 要計算幾次
-    GOLDEN_RATIO = 0.61803398875
+    GOLDEN_RATIO = (5**0.5 - 1)/2
     LOCATION = f"SHAPSampling\\plot_data\\{ID[DATASET]}"
     LOSS_LIMIT = dict()
 
@@ -477,6 +492,10 @@ if __name__=='__main__':
     fibonacciSeq = {0:0, 1:1}
     binToAnsDict = {} # 紀錄已計算的預測結果
 
+    countAll = 0
+    avgAll = 0
+    mode4Add = 0
+
     X_train, X_test, y_train, y_test = _setData()
     # Number of features(M)
     columns = X_train.columns.tolist()
@@ -485,6 +504,7 @@ if __name__=='__main__':
     model = Model()
 
     if SAMPLING_NUM[DATASET] >= 2**featureNum: SAMPLING_NUM[DATASET] = 2**featureNum-1
+    if LOOPNUM < 1 : LOOPNUM = 1
     for _ in range(LOOPNUM):
         # predict data
         X_predictData = X_test.iloc[[EXPLAIN_DATA]]
