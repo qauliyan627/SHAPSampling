@@ -535,7 +535,3 @@ if __name__=='__main__':
 
         mainFunc()
         EXPLAIN_DATA += 1
-
-
-    
-    
