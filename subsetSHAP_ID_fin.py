@@ -330,7 +330,7 @@ def mainFunc():
     allShapValue = [] # 記錄每次計算的SHAP值
     
     for j in range(ROUND):
-        print(f"ROUND_{j}")
+        print(f"LOOPNUM_{LOOPNUM}, ROUND_{j}")
         
         # samplingList: 特徵子集抽樣 array = 1~2**featureNum-1
         print(f"SAMPLING_NUM = {SAMPLING_NUM[DATASET]}")
@@ -405,9 +405,11 @@ if __name__=='__main__':
     SAMPLING_NUM = [32, 34, 36, 22, 22, 14, 50, 32]
     ROUND = 50 # 要計算幾次
     GOLDEN_RATIO = (5**0.5 - 1)/2
-    LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}"
+    LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}\\mode{MODE}"
+    if not os.path.exists(LOCATION): os.makedirs(LOCATION)
     LOSS_LIMIT = dict()
 
+    
     reCalcu = False #是否重新計算ANS_LIST
     ansPath = f"{LOCATION}\\ANS"
     lossPath = f"{LOCATION}\\LOSS"
