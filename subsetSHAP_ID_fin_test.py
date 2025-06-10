@@ -314,6 +314,8 @@ def getLOSS(): # 計算LOSS_LIMIT(COMP_MODE)
 def mainFunc():
     global LOSS_LIMIT
     global samplingList
+    global avgAll
+    global countAll
     samplingList = []
     time_total = 0
     sampling_time_total = 0
@@ -374,6 +376,11 @@ def mainFunc():
         else:
             print(f"優化失敗: {result.message}")
     if ROUND != 1:
+        if loss_total/ROUND < LOSS_LIMIT[EXPLAIN_DATA]:
+            countAll += 1
+        if LOOPNUM > 1:
+            avgAll += loss_total/ROUND
+        
         print(f"此為ID{ID[DATASET]}資料集, 解釋第{EXPLAIN_DATA}筆資料, mode{MODE}, 抽樣{SAMPLING_NUM[DATASET]}個, 總做了{ROUND}次")
         print(f"平均抽樣時間(s): {sampling_time_total/ROUND}s")
         print(f"平均時間(s): {time_total/ROUND}s")
@@ -382,13 +389,13 @@ def mainFunc():
         print(f"最小差距: {loss_min}")
         print(f"小於{LOSS_LIMIT[EXPLAIN_DATA]}的次數: {count}")
         
-        np.savetxt(f"{LOCATION}\\AllLossList_mode{MODE}_round{ROUND}.txt", allLossList)
-        np.savetxt(f"{LOCATION}\\AllList_mode{MODE}_round{ROUND}.txt", allSampList)
-        np.savetxt(f"{LOCATION}\\SpaceList_mode{MODE}_round{ROUND}.txt", allSpacList)
-        np.savetxt(f"{LOCATION}\\AllShapValueList_mode{MODE}_round{ROUND}.txt", allShapValue)
+        np.savetxt(f"{LOCATION}\\AllLossList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allLossList)
+        np.savetxt(f"{LOCATION}\\AllList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allSampList)
+        np.savetxt(f"{LOCATION}\\SpaceList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allSpacList)
+        np.savetxt(f"{LOCATION}\\AllShapValueList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allShapValue)
 
 if __name__=='__main__':
-    LOOPNUM = 1 # 解釋資料數量
+    LOOPNUM = 50 # 解釋資料數量
     DATASET = 0 # 選擇資料集
     ID = [186, 519, 563, 1, 165, 60, 544]
     EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
@@ -396,7 +403,7 @@ if __name__=='__main__':
     COMP_MODE = 4
     # 隨機選取特徵子集的數量: 32, 34, 36, 22, 22, 14, 32(mode4)
     SAMPLING_NUM = [32, 34, 36, 22, 22, 14, 50, 32]
-    ROUND = 100 # 要計算幾次
+    ROUND = 50 # 要計算幾次
     GOLDEN_RATIO = (5**0.5 - 1)/2
     LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}"
     LOSS_LIMIT = dict()
@@ -408,7 +415,6 @@ if __name__=='__main__':
 
     countAll = 0
     avgAll = 0
-    mode4Add = 0
 
     X_train, X_test, y_train, y_test = _setData()
     # Number of features(M)
@@ -451,3 +457,6 @@ if __name__=='__main__':
         if MODE == 4: ROUND = 1
         mainFunc()
         EXPLAIN_DATA += 1
+        
+    print("countAll =",countAll)
+    print("avgAll =", avgAll/LOOPNUM)
