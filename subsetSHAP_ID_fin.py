@@ -330,7 +330,7 @@ def mainFunc():
     allShapValue = [] # 記錄每次計算的SHAP值
     
     for j in range(ROUND):
-        print(f"LOOPNUM_{LOOPNUM}, ROUND_{j}")
+        print(f"LOOPNUM_{LOOPNUM}, ROUND_{j}, MODE{MODE},ID{ID[DATASET]}")
         
         # samplingList: 特徵子集抽樣 array = 1~2**featureNum-1
         print(f"SAMPLING_NUM = {SAMPLING_NUM[DATASET]}")
