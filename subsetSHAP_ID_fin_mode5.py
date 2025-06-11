@@ -375,6 +375,7 @@ def mainFunc():
             print("LOSS_LIMIT=", LOSS_LIMIT)
         else:
             print(f"優化失敗: {result.message}")
+        print("- - - "*5)
     if ROUND != 1:
         if loss_total/ROUND < LOSS_LIMIT[EXPLAIN_DATA]:
             countAll += 1
@@ -470,8 +471,9 @@ if __name__=='__main__':
         EXPLAIN_DATA += 1
         
     totalTime_e = time.time()
+    print("* * * "*5)
     print(f"LOOPNUM_{LOOPNUM}, ROUND_{ROUND}, ID{ID[DATASET]}, MODE{MODE}")
     print("countAll =",countAll)
     print("avgAll =", avgAll/LOOPNUM)
     print(f"總花費時間: {(totalTime_e-totalTime_s)/60}m")
-    print()
+    print("* * * "*5)
