@@ -466,3 +466,4 @@ if __name__=='__main__':
     print("countAll =",countAll)
     print("avgAll =", avgAll/LOOPNUM)
     print(f"總花費時間: {(totalTime_e-totalTime_s)/60}m")
+    print()
