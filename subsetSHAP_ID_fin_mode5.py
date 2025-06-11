@@ -61,7 +61,7 @@ def _setData(): # import dataset
 def _getExactShapValue(model):
     explainer = shap.TreeExplainer(model, X_train)
     shap_values = explainer(X_predictData)
-    np.savetxt(f"{LOCATION}\\ANS\\ans_{EXPLAIN_DATA}.txt", shap_values[0].values)
+    np.savetxt(f"{ansPath}\\ans_{EXPLAIN_DATA}.txt", shap_values[0].values)
     return shap_values[0].values
 
 def _h(z): # transiton: h()
@@ -155,9 +155,14 @@ def randPairSampling(samplingNum): # mode1: 隨機配對抽樣
 
 def sobolSampling(samplingNum): # mode2: 低差異序列: Sobol
     x = 2**featureNum - 2
+    sobolSampNum = 2
+    while True: #計算 2^n >= samplingNum 的最小值
+        if sobolSampNum >= samplingNum: break
+        sobolSampNum *= 2
     while True:
         sobol = qmc.Sobol(d=1)  # 1-dimensional
-        samples = sobol.random(n=samplingNum).ravel()  # Generate samples
+        samples = sobol.random(n=sobolSampNum).ravel()  # Generate samples
+        if sobolSampNum != samplingNum: samples = samples[:samplingNum]
         int_samples = (samples * x + 1).astype(int)
         for i in range(len(int_samples)):
             for j in range(i+1, len(int_samples)):
@@ -165,6 +170,7 @@ def sobolSampling(samplingNum): # mode2: 低差異序列: Sobol
                     int_samples[i] += np.random.choice([-1, 1])
         if len(set(int_samples)) != samplingNum : continue
         else: break
+    int_samples = int_samples.tolist()
     return int_samples
 
 def haltonSampling(samplingNum): # mode3: 低差異序列: Halton
@@ -179,6 +185,7 @@ def haltonSampling(samplingNum): # mode3: 低差異序列: Halton
                     int_samples[i] += np.random.choice([-1, 1])
         if len(set(int_samples)) != samplingNum : continue
         else: break
+    int_samples = int_samples.tolist()
     return int_samples
 
 def pairedSampling(): # mode4: 凸型配對(左右對稱)
@@ -296,7 +303,7 @@ def getSpac(spList): # 取得抽樣結果中各元素的距離
     return spacList
 
 def saveLossSampList(sampList):
-    with open(f"{LOCATION}ALLsamplingLossList.txt", 'a') as f:
+    with open(f"{lossPath}\\ALLsamplingLossList.txt", 'a') as f:
         np.savetxt(f,sampList)
 
 def getLOSS(): # 計算LOSS_LIMIT(COMP_MODE)
@@ -305,9 +312,9 @@ def getLOSS(): # 計算LOSS_LIMIT(COMP_MODE)
         optimal_variables = result.x
         loss = getLoss(optimal_variables) # 取得和精準SHAP值之間的差距
         LOSS_LIMIT[EXPLAIN_DATA] = loss
-        np.save(f"{LOCATION}\\LOSS\\loss_mode{COMP_MODE}.npy", LOSS_LIMIT)
-        np.savetxt(f"{LOCATION}\\LOSS\\LossShapValue_{EXPLAIN_DATA}.txt", optimal_variables)
-        return np.load(f"{LOCATION}\\LOSS\\loss_mode{COMP_MODE}.npy", allow_pickle=True).item()
+        np.save(f"{lossPath}\\loss_mode{COMP_MODE}.npy", LOSS_LIMIT)
+        np.savetxt(f"{lossPath}\\LossShapValue_{EXPLAIN_DATA}.txt", optimal_variables)
+        return np.load(f"{lossPath}\\loss_mode{COMP_MODE}.npy", allow_pickle=True).item()
     else:
         print(f"優化失敗: {result.message}")
 
@@ -375,6 +382,7 @@ def mainFunc():
             print("LOSS_LIMIT=", LOSS_LIMIT)
         else:
             print(f"優化失敗: {result.message}")
+        print("- - - "*5)
     if ROUND != 1:
         if loss_total/ROUND < LOSS_LIMIT[EXPLAIN_DATA]:
             countAll += 1
@@ -389,14 +397,22 @@ def mainFunc():
         print(f"最小差距: {loss_min}")
         print(f"小於{LOSS_LIMIT[EXPLAIN_DATA]}的次數: {count}")
         
-        np.savetxt(f"{LOCATION}\\AllLossList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allLossList)
-        np.savetxt(f"{LOCATION}\\AllList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allSampList)
-        np.savetxt(f"{LOCATION}\\SpaceList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allSpacList)
-        np.savetxt(f"{LOCATION}\\AllShapValueList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allShapValue)
+        AllLossList_LOC = f"{LOCATION}\\AllLossList"
+        AllList_LOC = f"{LOCATION}\\AllList"
+        SpaceList_LOC = f"{LOCATION}\\SpaceList"
+        AllShapValueList_LOC = f"{LOCATION}\\AllShapValueList"
+        if not os.path.exists(AllLossList_LOC): os.makedirs(AllLossList_LOC)
+        if not os.path.exists(AllList_LOC): os.makedirs(AllList_LOC)
+        if not os.path.exists(SpaceList_LOC): os.makedirs(SpaceList_LOC)
+        if not os.path.exists(AllShapValueList_LOC): os.makedirs(AllShapValueList_LOC)
+        np.savetxt(f"{AllLossList_LOC}\\AllLossList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allLossList)
+        np.savetxt(f"{AllList_LOC}\\AllList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allSampList)
+        np.savetxt(f"{SpaceList_LOC}\\SpaceList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allSpacList)
+        np.savetxt(f"{AllShapValueList_LOC}\\AllShapValueList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allShapValue)
 
 if __name__=='__main__':
     LOOPNUM = 50 # 解釋資料數量
-    DATASET = 0 # 選擇資料集
+    DATASET = 1 # 選擇資料集
     ID = [186, 519, 563, 1, 165, 60, 544]
     EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
     MODE = 5 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5
@@ -406,14 +422,14 @@ if __name__=='__main__':
     ROUND = 50 # 要計算幾次
     GOLDEN_RATIO = (5**0.5 - 1)/2
     LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}\\mode{MODE}"
-    ANS_GAP_LOC = f"SHAPSampling\\result_data\\{ID[DATASET]}"
+    ANS_LOSS_LOC = f"SHAPSampling\\result_data\\{ID[DATASET]}"
     if not os.path.exists(LOCATION): os.makedirs(LOCATION)
     LOSS_LIMIT = dict()
 
     totalTime_s = time.time()
     reCalcu = False #是否重新計算ANS_LIST
-    ansPath = f"{ANS_GAP_LOC}\\ANS"
-    lossPath = f"{ANS_GAP_LOC}\\LOSS"
+    ansPath = f"{ANS_LOSS_LOC}\\ANS"
+    lossPath = f"{ANS_LOSS_LOC}\\LOSS"
     fibonacciSeq = {0:0, 1:1}
 
     countAll = 0
@@ -462,7 +478,9 @@ if __name__=='__main__':
         EXPLAIN_DATA += 1
         
     totalTime_e = time.time()
+    print("* * * "*5)
     print(f"LOOPNUM_{LOOPNUM}, ROUND_{ROUND}, ID{ID[DATASET]}, MODE{MODE}")
     print("countAll =",countAll)
     print("avgAll =", avgAll/LOOPNUM)
     print(f"總花費時間: {(totalTime_e-totalTime_s)/60}m")
+    print("* * * "*5)
