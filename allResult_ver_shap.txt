@@ -61,7 +61,6 @@
         小於0.9775032995923914的次數: 25
         
 - Heart Failure Clinical Records(519) #12 -- 34
-    mode4 avgAll = 0.6958362028069918
     mode0
         countAll = 29
         avgAll = 0.7235880402624126
@@ -71,6 +70,7 @@
     mode2
         countAll = 32
         avgAll = 0.39887491306382494
+    mode4 avgAll = 0.6958362028069918
     mode5
         countAll = 0
         avgAll = 2.1771641991124526
