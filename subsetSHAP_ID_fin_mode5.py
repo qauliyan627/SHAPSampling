@@ -406,11 +406,14 @@ if __name__=='__main__':
     ROUND = 50 # 要計算幾次
     GOLDEN_RATIO = (5**0.5 - 1)/2
     LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}"
+    ANS_GAP_LOC = f"SHAPSampling\\result_data\\{ID[DATASET]}"
+    if not os.path.exists(LOCATION): os.makedirs(LOCATION)
     LOSS_LIMIT = dict()
 
+    
     reCalcu = False #是否重新計算ANS_LIST
-    ansPath = f"{LOCATION}\\ANS"
-    lossPath = f"{LOCATION}\\LOSS"
+    ansPath = f"{ANS_GAP_LOC}\\ANS"
+    lossPath = f"{ANS_GAP_LOC}\\LOSS"
     fibonacciSeq = {0:0, 1:1}
 
     countAll = 0
