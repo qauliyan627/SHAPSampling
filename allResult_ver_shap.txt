@@ -54,7 +54,10 @@
     mode4 avgAll = 0.6958362028069918
     mode0
         countAll = 29
-        avgAll = 0.7220562086865754
+        avgAll = 0.7235880402624126
+    mode1
+        countAll = 1
+        avgAll = 1.2515921362559634
     mode2
         countAll = 32
         avgAll = 0.39887491306382494
