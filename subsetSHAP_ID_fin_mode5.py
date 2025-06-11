@@ -61,7 +61,7 @@ def _setData(): # import dataset
 def _getExactShapValue(model):
     explainer = shap.TreeExplainer(model, X_train)
     shap_values = explainer(X_predictData)
-    np.savetxt(f"{LOCATION}\\ANS\\ans_{EXPLAIN_DATA}.txt", shap_values[0].values)
+    np.savetxt(f"{ansPath}\\ans_{EXPLAIN_DATA}.txt", shap_values[0].values)
     return shap_values[0].values
 
 def _h(z): # transiton: h()
@@ -296,7 +296,7 @@ def getSpac(spList): # 取得抽樣結果中各元素的距離
     return spacList
 
 def saveLossSampList(sampList):
-    with open(f"{LOCATION}ALLsamplingLossList.txt", 'a') as f:
+    with open(f"{lossPath}\\ALLsamplingLossList.txt", 'a') as f:
         np.savetxt(f,sampList)
 
 def getLOSS(): # 計算LOSS_LIMIT(COMP_MODE)
@@ -305,9 +305,9 @@ def getLOSS(): # 計算LOSS_LIMIT(COMP_MODE)
         optimal_variables = result.x
         loss = getLoss(optimal_variables) # 取得和精準SHAP值之間的差距
         LOSS_LIMIT[EXPLAIN_DATA] = loss
-        np.save(f"{LOCATION}\\LOSS\\loss_mode{COMP_MODE}.npy", LOSS_LIMIT)
-        np.savetxt(f"{LOCATION}\\LOSS\\LossShapValue_{EXPLAIN_DATA}.txt", optimal_variables)
-        return np.load(f"{LOCATION}\\LOSS\\loss_mode{COMP_MODE}.npy", allow_pickle=True).item()
+        np.save(f"{lossPath}\\loss_mode{COMP_MODE}.npy", LOSS_LIMIT)
+        np.savetxt(f"{lossPath}\\LossShapValue_{EXPLAIN_DATA}.txt", optimal_variables)
+        return np.load(f"{lossPath}\\loss_mode{COMP_MODE}.npy", allow_pickle=True).item()
     else:
         print(f"優化失敗: {result.message}")
 
@@ -406,14 +406,14 @@ if __name__=='__main__':
     ROUND = 50 # 要計算幾次
     GOLDEN_RATIO = (5**0.5 - 1)/2
     LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}\\mode{MODE}"
-    ANS_GAP_LOC = f"SHAPSampling\\result_data\\{ID[DATASET]}"
+    ANS_LOSS_LOC = f"SHAPSampling\\result_data\\{ID[DATASET]}"
     if not os.path.exists(LOCATION): os.makedirs(LOCATION)
     LOSS_LIMIT = dict()
 
     totalTime_s = time.time()
     reCalcu = False #是否重新計算ANS_LIST
-    ansPath = f"{ANS_GAP_LOC}\\ANS"
-    lossPath = f"{ANS_GAP_LOC}\\LOSS"
+    ansPath = f"{ANS_LOSS_LOC}\\ANS"
+    lossPath = f"{ANS_LOSS_LOC}\\LOSS"
     fibonacciSeq = {0:0, 1:1}
 
     countAll = 0
