@@ -155,9 +155,14 @@ def randPairSampling(samplingNum): # mode1: 隨機配對抽樣
 
 def sobolSampling(samplingNum): # mode2: 低差異序列: Sobol
     x = 2**featureNum - 2
+    sobolSampNum = 2
+    while True: #計算 2^n >= samplingNum 的最小值
+        if sobolSampNum >= samplingNum: break
+        sobolSampNum *= 2
     while True:
         sobol = qmc.Sobol(d=1)  # 1-dimensional
-        samples = sobol.random(n=samplingNum).ravel()  # Generate samples
+        samples = sobol.random(n=sobolSampNum).ravel()  # Generate samples
+        if sobolSampNum != samplingNum: samples = samples[:samplingNum]
         int_samples = (samples * x + 1).astype(int)
         for i in range(len(int_samples)):
             for j in range(i+1, len(int_samples)):
@@ -165,6 +170,7 @@ def sobolSampling(samplingNum): # mode2: 低差異序列: Sobol
                     int_samples[i] += np.random.choice([-1, 1])
         if len(set(int_samples)) != samplingNum : continue
         else: break
+    int_samples = int_samples.tolist()
     return int_samples
 
 def haltonSampling(samplingNum): # mode3: 低差異序列: Halton
@@ -179,6 +185,7 @@ def haltonSampling(samplingNum): # mode3: 低差異序列: Halton
                     int_samples[i] += np.random.choice([-1, 1])
         if len(set(int_samples)) != samplingNum : continue
         else: break
+    int_samples = int_samples.tolist()
     return int_samples
 
 def pairedSampling(): # mode4: 凸型配對(左右對稱)
