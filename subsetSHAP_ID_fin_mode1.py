@@ -389,10 +389,18 @@ def mainFunc():
         print(f"最小差距: {loss_min}")
         print(f"小於{LOSS_LIMIT[EXPLAIN_DATA]}的次數: {count}")
         
-        np.savetxt(f"{LOCATION}\\AllLossList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allLossList)
-        np.savetxt(f"{LOCATION}\\AllList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allSampList)
-        np.savetxt(f"{LOCATION}\\SpaceList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allSpacList)
-        np.savetxt(f"{LOCATION}\\AllShapValueList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allShapValue)
+        AllLossList_LOC = f"{LOCATION}\\AllLossList"
+        AllList_LOC = f"{LOCATION}\\AllList"
+        SpaceList_LOC = f"{LOCATION}\\SpaceList"
+        AllShapValueList_LOC = f"{LOCATION}\\AllShapValueList"
+        if not os.path.exists(AllLossList_LOC): os.makedirs(AllLossList_LOC)
+        if not os.path.exists(AllList_LOC): os.makedirs(AllList_LOC)
+        if not os.path.exists(SpaceList_LOC): os.makedirs(SpaceList_LOC)
+        if not os.path.exists(AllShapValueList_LOC): os.makedirs(AllShapValueList_LOC)
+        np.savetxt(f"{AllLossList_LOC}\\AllLossList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allLossList)
+        np.savetxt(f"{AllList_LOC}\\AllList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allSampList)
+        np.savetxt(f"{SpaceList_LOC}\\SpaceList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allSpacList)
+        np.savetxt(f"{AllShapValueList_LOC}\\AllShapValueList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allShapValue)
 
 if __name__=='__main__':
     LOOPNUM = 50 # 解釋資料數量
