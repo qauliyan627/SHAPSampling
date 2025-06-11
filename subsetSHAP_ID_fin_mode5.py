@@ -330,7 +330,7 @@ def mainFunc():
     allShapValue = [] # 記錄每次計算的SHAP值
     
     for j in range(ROUND):
-        print(f"LOOPNUM_{LOOPNUM}, ROUND_{j}, MODE{MODE},ID{ID[DATASET]}")
+        print(f"EXPLAIN_DATA_{EXPLAIN_DATA}, ROUND_{ROUND}, ID{ID[DATASET]}, MODE{MODE}")
         
         # samplingList: 特徵子集抽樣 array = 1~2**featureNum-1
         print(f"SAMPLING_NUM = {SAMPLING_NUM[DATASET]}")
@@ -405,12 +405,12 @@ if __name__=='__main__':
     SAMPLING_NUM = [32, 34, 36, 22, 22, 14, 50, 32]
     ROUND = 50 # 要計算幾次
     GOLDEN_RATIO = (5**0.5 - 1)/2
-    LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}"
+    LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}\\mode{MODE}"
     ANS_GAP_LOC = f"SHAPSampling\\result_data\\{ID[DATASET]}"
     if not os.path.exists(LOCATION): os.makedirs(LOCATION)
     LOSS_LIMIT = dict()
 
-    
+    totalTime_s = time.time()
     reCalcu = False #是否重新計算ANS_LIST
     ansPath = f"{ANS_GAP_LOC}\\ANS"
     lossPath = f"{ANS_GAP_LOC}\\LOSS"
@@ -461,5 +461,8 @@ if __name__=='__main__':
         mainFunc()
         EXPLAIN_DATA += 1
         
+    totalTime_e = time.time()
+    print(f"LOOPNUM_{LOOPNUM}, ROUND_{ROUND}, ID{ID[DATASET]}, MODE{MODE}")
     print("countAll =",countAll)
     print("avgAll =", avgAll/LOOPNUM)
+    print(f"總花費時間: {(totalTime_e-totalTime_s)/60}m")
