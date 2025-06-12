@@ -1,3 +1,5 @@
+- Liver Disorders(60) #5
+
 - 1 #8 -- 22
 
 - Concrete Compressive Strength(165) #8 -- 22
@@ -73,7 +75,8 @@
     mode3
         countAll = 0
         avgAll = 6.080275203028484
-    mode4 avgAll = 0.6958362028069918
+    mode4
+        avgAll = 0.6958362028069918
     mode5
         countAll = 0
         avgAll = 2.1771641991124526
@@ -83,15 +86,20 @@
         minGap = 0.37378932455830916, minGapSampNum = 320
 
 - Iranian Churn(563) #13
+    mode0
+        countAll = 0
+        avgAll = 1.1734832004849325
     mode2
         countAll = 0
         avgAll = 1.8090136370876713
     mode3  
         countAll = 0
         avgAll = 9.173746296908664
-
-- Liver Disorders(60) #5
-    
+    mode4
+        avgAll = 0.5480405089326312
+    mode5
+        countAll = 0
+        avgAll = 4.63564787865222
 
 - Estimation of Obesity Levels Based On Eating Habits and Physical Condition(544) #16
 
