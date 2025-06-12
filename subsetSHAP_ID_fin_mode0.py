@@ -419,7 +419,7 @@ if __name__=='__main__':
     COMP_MODE = 4
     # 隨機選取特徵子集的數量: 32, 34, 36, 22, 22, 14, 32(mode4)
     SAMPLING_NUM = [32, 34, 36, 22, 22, 14, 50, 32]
-    ROUND = 50 # 要計算幾次
+    ROUND = 100 # 要計算幾次
     GOLDEN_RATIO = (5**0.5 - 1)/2
     LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}\\mode{MODE}"
     ANS_LOSS_LOC = f"SHAPSampling\\result_data\\{ID[DATASET]}"
