@@ -4,8 +4,8 @@
 
 - Wine Quality(186) #11 -- 32
     mode0
-        countAll = 15
-        avgAll = 1.2628026065079911
+        countAll = 1
+        avgAll = 1.6982984063400672
     mode1
         countAll = 17
         avgAll = 1.1174849395444892
