@@ -445,7 +445,7 @@ if __name__=='__main__':
     
     model = Model()
 
-    if SAMPLING_NUM >= 2**featureNum: SAMPLING_NUM = 2**featureNum-1
+    #if SAMPLING_NUM >= 2**featureNum: SAMPLING_NUM = 2**featureNum-1
     if LOOPNUM < 1 : LOOPNUM = 1
     for _ in range(LOOPNUM):
         binToAnsDict = {} # 紀錄已計算的預測結果
