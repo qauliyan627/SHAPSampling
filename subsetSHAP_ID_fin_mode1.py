@@ -413,7 +413,7 @@ def mainFunc():
 
 if __name__=='__main__':
     LOOPNUM = 50 # 解釋資料數量
-    DATASET = 6 # 選擇資料集
+    DATASET = 0 # 選擇資料集
     ID = [186, 519, 563, 1, 165, 60, 544]
     EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
     MODE = 1 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5
@@ -421,7 +421,7 @@ if __name__=='__main__':
     # 隨機選取特徵子集的數量(mode4)
     SAMPLING_NUM_LIST = [32, 34, 36, 22, 22, 14, 46]
     SAMPLING_NUM = SAMPLING_NUM_LIST[DATASET]
-    ROUND = 100 # 要計算幾次
+    ROUND = 50 # 要計算幾次
     GOLDEN_RATIO = (5**0.5 - 1)/2
     LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}\\mode{MODE}"
     ANS_LOSS_LOC = f"SHAPSampling\\result_data\\{ID[DATASET]}"
