@@ -117,7 +117,8 @@ def minimizeFunc():
 def getLoss(optimal_variables): # 取得跟精準SHAP值的差距
     loss = 0
     for i in range(featureNum):
-        loss += abs(ANS_LIST[i] - optimal_variables[i])
+        loss += (ANS_LIST[i] - optimal_variables[i])**2
+    loss = math.sqrt(loss)
     print("loss in getLoss:",loss)
     return loss
 
