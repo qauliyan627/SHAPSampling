@@ -340,8 +340,8 @@ def mainFunc():
         print(f"EXPLAIN_DATA_{EXPLAIN_DATA}, ROUND_{j}/{ROUND}, ID{ID[DATASET]}, MODE{MODE}")
         
         # samplingList: 特徵子集抽樣 array = 1~2**featureNum-1
-        print(f"SAMPLING_NUM = {SAMPLING_NUM[DATASET]}")
-        samplingList = sampling(SAMPLING_NUM[DATASET], MODE)
+        print(f"SAMPLING_NUM = {SAMPLING_NUM}")
+        samplingList = sampling(SAMPLING_NUM, MODE)
         
         initial_guess = np.arange(featureNum)
         constraints = ({'type': 'eq', 'fun': equality_constraint})
@@ -389,7 +389,7 @@ def mainFunc():
         if LOOPNUM > 1:
             avgAll += loss_total/ROUND
         
-        print(f"此為ID{ID[DATASET]}資料集, 解釋第{EXPLAIN_DATA}筆資料, mode{MODE}, 抽樣{SAMPLING_NUM[DATASET]}個, 總做了{ROUND}次")
+        print(f"此為ID{ID[DATASET]}資料集, 解釋第{EXPLAIN_DATA}筆資料, mode{MODE}, 抽樣{SAMPLING_NUM}個, 總做了{ROUND}次")
         print(f"平均抽樣時間(s): {sampling_time_total/ROUND}s")
         print(f"平均時間(s): {time_total/ROUND}s")
         print(f"平均差距: {loss_total/ROUND}")
@@ -417,8 +417,9 @@ if __name__=='__main__':
     EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
     MODE = 3 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5
     COMP_MODE = 4
-    # 隨機選取特徵子集的數量: 32, 34, 36, 22, 22, 14, 32(mode4)
-    SAMPLING_NUM = [32, 34, 36, 22, 22, 14, 50, 32]
+    # 隨機選取特徵子集的數量(mode4)
+    SAMPLING_NUM_LIST = [32, 34, 36, 22, 22, 14, 46]
+    SAMPLING_NUM = SAMPLING_NUM_LIST[DATASET]
     ROUND = 100 # 要計算幾次
     GOLDEN_RATIO = (5**0.5 - 1)/2
     LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}\\mode{MODE}"
@@ -442,7 +443,7 @@ if __name__=='__main__':
 
     model = Model()
 
-    if SAMPLING_NUM[DATASET] >= 2**featureNum: SAMPLING_NUM[DATASET] = 2**featureNum-1
+    if SAMPLING_NUM >= 2**featureNum: SAMPLING_NUM = 2**featureNum-1
     if LOOPNUM < 1 : LOOPNUM = 1
     for _ in range(LOOPNUM):
         binToAnsDict = {} # 紀錄已計算的預測結果
