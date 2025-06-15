@@ -5,21 +5,21 @@
 - Concrete Compressive Strength(165) #8 -- 22
 
 - Wine Quality(186) #11 -- 32
-    mode0_50_50
+    mode0
         countAll = 12
         avgAll = 0.47299369472931735
-    mode1_50_50
+    mode1
         countAll = 15
         avgAll = 0.4189877649598583
-    mode2_50_50
+    mode2
         countAll = 0
         avgAll = 0.7122577093693602
-    mode3_50_50
+    mode3
         countAll = 0
         avgAll = 2.463897839766687
     mode4
         avgAll = 0.39012764432634184
-    mode5_50_50
+    mode5
         countAll = 3
         avgAll = 0.5402204388313098
     - 抽樣差距實驗
