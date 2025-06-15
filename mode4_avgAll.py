@@ -1,6 +1,6 @@
 import numpy as np
 
-DATASET = 1 # 選擇資料集
+DATASET = 6 # 選擇資料集
 COMP_MODE = 4
 ID = [186, 519, 563, 1, 165, 60, 544]
 LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}"
