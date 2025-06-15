@@ -5,23 +5,23 @@
 - Concrete Compressive Strength(165) #8 -- 22
 
 - Wine Quality(186) #11 -- 32
-    mode0_50_50/
+    mode0_50_50
         countAll = 12
-        avgAll = 0.472511951055669
-    mode1_50_50/
-        countAll = 16
-        avgAll = 0.4312384686687954
-    mode2_50_50/
+        avgAll = 0.47299369472931735
+    mode1_50_50
+        countAll = 15
+        avgAll = 0.4189877649598583
+    mode2_50_50
         countAll = 0
-        avgAll = 0.7225473423717682
+        avgAll = 0.7122577093693602
     mode3_50_50
         countAll = 0
-        avgAll = 2.4826318147761444
-    mode4/
-        avgAll = 1.0266860317484074
+        avgAll = 2.463897839766687
+    mode4
+        avgAll = 0.39012764432634184
     mode5_50_50
         countAll = 3
-        avgAll = 0.526761864155313
+        avgAll = 0.5402204388313098
     - 抽樣差距實驗
         all_SAMPLING_NUM_gapList = {10: 20.253055884370646, 20: 8.358893529229897, 40: 1.0816628217398168, 80: 0.9517778694285534, 160: 0.9224035071334455, 320: 0.9126138506385614, 640: 0.9030695372959231}
         maxLoss = 20.253055884370646, maxLossSampNum = 10
@@ -63,23 +63,23 @@
         小於0.9775032995923914的次數: 25
         
 - Heart Failure Clinical Records(519) #12 -- 34
-    mode0/
-        countAll = 31
-        avgAll = 0.29657490532690184
-    mode1/
-        countAll = 1
-        avgAll = 0.4646287341095705
-    mode2/
+    mode0
+        countAll = 33
+        avgAll = 0.2950769144718283
+    mode1
         countAll = 2
-        avgAll = 0.5108380872245631
+        avgAll = 0.4576218990572544
+    mode2
+        countAll = 2
+        avgAll = 0.4956609998050243
     mode3
         countAll = 0
-        avgAll = 6.080275203028484
+        avgAll = 2.714140544158042
     mode4
-        avgAll = 0.6958362028069918
+        avgAll = 0.2975449973971486
     mode5
         countAll = 0
-        avgAll = 2.1771641991124526
+        avgAll = 0.8380367940734245
     - 抽樣差距實驗
         all_SAMPLING_NUM_gapList = {10: 13.370855768099819, 20: 1.3589192283324234, 40: 0.4552849807071525, 80: 0.3944670850365403, 160: 0.38046354865236454, 320: 0.37378932455830916, 640: 0.3746916784340432}
         maxGap = 13.370855768099819, maxGapSampNum = 10
@@ -88,24 +88,40 @@
 - Iranian Churn(563) #13
     mode0
         countAll = 0
-        avgAll = 1.1734832004849325
+        avgAll = 0.39960325611927094
     mode1
         countAll = 0
-        avgAll = 2.667086276338698
+        avgAll = 0.9246637580115946
     mode2
         countAll = 0
-        avgAll = 1.8090136370876713
+        avgAll = 0.7639020613789899
     mode3  
         countAll = 0
-        avgAll = 9.173746296908664
+        avgAll = 3.7031041299144265
     mode4
-        avgAll = 0.5480405089326312
+        avgAll = 0.21064441245612733
     mode5
         countAll = 0
-        avgAll = 4.63564787865222
+        avgAll = 1.6380878945631985
 
 - Estimation of Obesity Levels Based On Eating Habits and Physical Condition(544) #16
-
+    mode0
+        countAll = 50
+        avgAll = 2.266255976633383
+    mode1
+        countAll = 0
+        avgAll = 4.500437024303939
+    mode2
+        countAll = 45
+        avgAll = 3.3039862349175655
+    mode3
+        countAll = 0
+        avgAll = 7.991060180849586
+    mode4
+        avgAll = 3.724922515121083
+    mode5
+        countAll = 0
+        avgAll = 6.077697595837037
 
 Kaggle
 - heart
