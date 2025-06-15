@@ -88,24 +88,40 @@
 - Iranian Churn(563) #13
     mode0
         countAll = 0
-        avgAll = 1.1734832004849325
+        avgAll = 0.39960325611927094
     mode1
         countAll = 0
-        avgAll = 2.667086276338698
+        avgAll = 0.9246637580115946
     mode2
         countAll = 0
-        avgAll = 1.8090136370876713
+        avgAll = 0.7639020613789899
     mode3  
         countAll = 0
-        avgAll = 9.173746296908664
+        avgAll = 3.7031041299144265
     mode4
-        avgAll = 0.5480405089326312
+        avgAll = 0.21064441245612733
     mode5
         countAll = 0
-        avgAll = 4.63564787865222
+        avgAll = 1.6380878945631985
 
 - Estimation of Obesity Levels Based On Eating Habits and Physical Condition(544) #16
-
+    mode0
+        countAll = 50
+        avgAll = 2.266255976633383
+    mode1
+        countAll = 0
+        avgAll = 4.500437024303939
+    mode2
+        countAll = 45
+        avgAll = 3.3039862349175655
+    mode3
+        countAll = 0
+        avgAll = 7.991060180849586
+    mode4
+        avgAll = 3.724922515121083
+    mode5
+        countAll = 0
+        avgAll = 6.077697595837037
 
 Kaggle
 - heart
