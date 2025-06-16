@@ -22,6 +22,9 @@
     mode5
         countAll = 3
         avgAll = 0.5402204388313098
+    mode5a
+        countAll = 12
+        avgAll = 0.4661060243203027
     - 抽樣差距實驗
         all_SAMPLING_NUM_gapList = {10: 20.253055884370646, 20: 8.358893529229897, 40: 1.0816628217398168, 80: 0.9517778694285534, 160: 0.9224035071334455, 320: 0.9126138506385614, 640: 0.9030695372959231}
         maxLoss = 20.253055884370646, maxLossSampNum = 10
@@ -80,6 +83,9 @@
     mode5
         countAll = 0
         avgAll = 0.8380367940734245
+    mode5a
+        countAll = 0
+        avgAll = 0.5149975110179892
     - 抽樣差距實驗
         all_SAMPLING_NUM_gapList = {10: 13.370855768099819, 20: 1.3589192283324234, 40: 0.4552849807071525, 80: 0.3944670850365403, 160: 0.38046354865236454, 320: 0.37378932455830916, 640: 0.3746916784340432}
         maxGap = 13.370855768099819, maxGapSampNum = 10
@@ -103,6 +109,9 @@
     mode5
         countAll = 0
         avgAll = 1.6380878945631985
+    mode5a
+        countAll = 0
+        avgAll = 0.9783886645930242
 
 - Estimation of Obesity Levels Based On Eating Habits and Physical Condition(544) #16
     mode0
@@ -122,6 +131,9 @@
     mode5
         countAll = 0
         avgAll = 6.077697595837037
+    mode5a
+        countAll = 0
+        avgAll = 4.974480902758567
 
 Kaggle
 - heart
