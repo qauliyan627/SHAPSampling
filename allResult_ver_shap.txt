@@ -131,7 +131,7 @@
     mode5
         countAll = 0
         avgAll = 6.077697595837037
-    mode5a
+    mode5a (maxFib//2)
         countAll = 0
         avgAll = 4.974480902758567
 
