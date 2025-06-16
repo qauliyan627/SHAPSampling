@@ -230,7 +230,7 @@ def ldFibSampling(samplingNum): # mode5: 費氏數列 + 低差異序列想法(�
             else: maxFib += 1
         # 抽樣
         while True:
-            ranFib = fibonacci(random.randint(1, maxFib))
+            ranFib = fibonacci(random.randint(maxFib//2, maxFib))
             if n_top + ranFib not in tempList:
                 tempList.append(n_top + ranFib)
                 break
@@ -413,7 +413,7 @@ def mainFunc():
 
 if __name__=='__main__':
     LOOPNUM = 50 # 解釋資料數量
-    DATASET = 2 # 選擇資料集
+    DATASET = 0 # 選擇資料集
     ID = [186, 519, 563, 1, 165, 60, 544]
     EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
     MODE = 5 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5
