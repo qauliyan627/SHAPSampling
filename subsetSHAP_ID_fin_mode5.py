@@ -230,7 +230,7 @@ def ldFibSampling(samplingNum): # mode5: 費氏數列 + 低差異序列想法(�
             else: maxFib += 1
         # 抽樣
         while True:
-            ranFib = fibonacci(random.randint(math.floor(maxFib*0.6), maxFib))
+            ranFib = fibonacci(random.randint(math.floor(maxFib*0.65), maxFib))
             if n_top + ranFib not in tempList:
                 tempList.append(n_top + ranFib)
                 break
