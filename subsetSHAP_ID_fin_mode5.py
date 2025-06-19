@@ -303,6 +303,7 @@ def sampling(sampling_num, mode=0): # 選擇抽樣方法
     time_start = time.time() # 開始計算時間
     if sampling_num == "COMP_MODE":
         mode = COMP_MODE
+        if mode==6: sampling_num=SAMPLING_NUM
     if mode == 0: 
         samplingList = randomSampling(sampling_num)
     elif mode == 1:
@@ -471,6 +472,7 @@ if __name__=='__main__':
     # Number of features(M)
     columns = X_train.columns.tolist()
     featureNum = len(columns)
+    SAMPLING_NUM = 5*featureNum
 
     model = Model()
 

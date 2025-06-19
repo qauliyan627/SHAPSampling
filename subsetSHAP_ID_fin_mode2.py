@@ -230,7 +230,7 @@ def ldFibSampling(samplingNum): # mode5: 費氏數列 + 低差異序列想法(�
             else: maxFib += 1
         # 抽樣
         while True:
-            ranFib = fibonacci(random.randint(1, maxFib))
+            ranFib = fibonacci(random.randint(math.floor(maxFib*0.4), maxFib))
             if n_top + ranFib not in tempList:
                 tempList.append(n_top + ranFib)
                 break
@@ -271,10 +271,39 @@ def fibonacci(n): # 計算費氏數
         fibonacciSeq[n] = fn + fm
         return fn + fm
 
+def pairedFibPlus(samilingNum): #mode6: 加強凸型
+    top = 2**featureNum-1
+    but = (2**featureNum)//2
+    tempList = []
+    temp = 0
+    i = 0
+    while True:
+        temp = fibonacci(i)
+        temp += but
+        if temp > top:
+            but += 1
+            i = 0
+        if temp not in tempList: tempList.append(temp)
+        if len(tempList) >= samilingNum//2: break
+        i += 1
+    for i in tempList:
+        tempStr = ""
+        i_bin = format(i, 'b')
+        i_bin = i_bin.zfill(featureNum)
+        # 反向二進位 01交換
+        for j in range(featureNum):
+            if i_bin[j] == '0': tempStr+='1'
+            else : tempStr+='0'
+        i_r = int(tempStr,2)
+        if i_r not in tempList: tempList.append(i_r)
+    tempList.sort()
+    return tempList
+
 def sampling(sampling_num, mode=0): # 選擇抽樣方法
     time_start = time.time() # 開始計算時間
     if sampling_num == "COMP_MODE":
         mode = COMP_MODE
+        if mode==6: sampling_num=SAMPLING_NUM
     if mode == 0: 
         samplingList = randomSampling(sampling_num)
     elif mode == 1:
@@ -287,6 +316,8 @@ def sampling(sampling_num, mode=0): # 選擇抽樣方法
         samplingList = pairedSampling()
     elif mode == 5:
         samplingList = ldFibSampling(sampling_num)
+    elif mode == 6:
+        samplingList = pairedFibPlus(sampling_num)
     logging.info("結束抽樣")
 
     time_end = time.time() # 抽樣結束時間
@@ -413,11 +444,11 @@ def mainFunc():
 
 if __name__=='__main__':
     LOOPNUM = 50 # 解釋資料數量
-    DATASET = 2 # 選擇資料集
+    DATASET = 0 # 選擇資料集
     ID = [186, 519, 563, 1, 165, 60, 544]
     EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
-    MODE = 2 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5
-    COMP_MODE = 4
+    MODE = 2 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6
+    COMP_MODE = 6
     # 隨機選取特徵子集的數量(mode4)
     SAMPLING_NUM_LIST = [32, 34, 36, 22, 22, 14, 46]
     SAMPLING_NUM = SAMPLING_NUM_LIST[DATASET]
@@ -441,6 +472,7 @@ if __name__=='__main__':
     # Number of features(M)
     columns = X_train.columns.tolist()
     featureNum = len(columns)
+    SAMPLING_NUM = 5*featureNum
 
     model = Model()
 
@@ -475,7 +507,7 @@ if __name__=='__main__':
         print("ANS_LIST=",ANS_LIST)
         print("LOSS_LIMIT=",LOSS_LIMIT) 
 
-        if MODE == 4: ROUND = 1
+        if MODE == COMP_MODE: ROUND = 1
         mainFunc()
         EXPLAIN_DATA += 1
         
