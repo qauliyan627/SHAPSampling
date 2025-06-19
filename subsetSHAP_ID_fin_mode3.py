@@ -122,6 +122,32 @@ def getLoss(optimal_variables): # 取得跟精準SHAP值的差距
     print("loss in getLoss:",loss)
     return loss
 
+def fibonacci(n): # 計算費氏數
+    if n == 0: return 0
+    elif n == 1: return 1
+    elif n < 0: return -1
+    if n in fibonacciSeq.keys():
+        return fibonacciSeq[n]
+    else:
+        fn = fibonacci(n-1)
+        fm = fibonacci(n-2)
+        fibonacciSeq[n] = fn + fm
+        return fn + fm
+
+def paired(tempList):
+    for i in tempList:
+        if i == 2**featureNum-1: continue
+        tempStr = ""
+        i_bin = format(i, 'b')
+        i_bin = i_bin.zfill(featureNum)
+        # 反向二進位 01交換
+        for j in range(featureNum):
+            if i_bin[j] == '0': tempStr+='1'
+            else : tempStr+='0'
+        i_r = int(tempStr,2)
+        if i_r not in tempList: tempList.append(i_r)
+    return tempList
+
 def randomSampling(samplingNum): #  mode0: 隨機
     tempList = []
     while True:
@@ -142,16 +168,7 @@ def randPairSampling(samplingNum): # mode1: 隨機配對抽樣
         else: tempList.append(r)
         if len(tempList) >= samplingNum//2: break
     # 反向配對
-    for i in tempList:
-        tempStr = ""
-        i_bin = format(i, 'b')
-        i_bin = i_bin.zfill(featureNum)
-        # 反向二進位 01交換
-        for j in range(featureNum):
-            if i_bin[j] == '0': tempStr+='1'
-            else : tempStr+='0'
-        i_r = int(tempStr,2)
-        if i_r not in tempList: tempList.append(i_r)
+    tempList = paired(tempList)
     return tempList
 
 def sobolSampling(samplingNum): # mode2: 低差異序列: Sobol
@@ -201,16 +218,7 @@ def pairedSampling(): # mode4: 凸型配對(左右對稱)
         tempList.append(temp)
         i+=1
     # 反向配對
-    for i in tempList:
-        tempStr = ""
-        i_bin = format(i, 'b')
-        i_bin = i_bin.zfill(featureNum)
-        # 反向二進位 01交換
-        for j in range(featureNum):
-            if i_bin[j] == '0': tempStr+='1'
-            else : tempStr+='0'
-        i_r = int(tempStr,2)
-        if i_r not in tempList: tempList.append(i_r)
+    tempList = paired(tempList)
     return tempList
 
 def ldFibSampling(samplingNum): # mode5: 費氏數列 + 低差異序列想法(挑選最大區間抽樣) + 配對抽樣
@@ -246,30 +254,9 @@ def ldFibSampling(samplingNum): # mode5: 費氏數列 + 低差異序列想法(�
                 maxRange = t_but-t_top
     tempList.remove(top)
     tempList.remove(but)
-    for i in tempList:
-        tempStr = ""
-        i_bin = format(i, 'b')
-        i_bin = i_bin.zfill(featureNum)
-        # 反向二進位 01交換
-        for j in range(featureNum):
-            if i_bin[j] == '0': tempStr+='1'
-            else : tempStr+='0'
-        i_r = int(tempStr,2)
-        if i_r not in tempList: tempList.append(i_r)
+    tempList = paired(tempList)
     tempList.sort()
     return tempList
-
-def fibonacci(n): # 計算費氏數
-    if n == 0: return 0
-    elif n == 1: return 1
-    elif n < 0: return -1
-    if n in fibonacciSeq.keys():
-        return fibonacciSeq[n]
-    else:
-        fn = fibonacci(n-1)
-        fm = fibonacci(n-2)
-        fibonacciSeq[n] = fn + fm
-        return fn + fm
 
 def pairedFibPlus(samilingNum): #mode6: 加強凸型
     top = 2**featureNum-1
@@ -283,19 +270,30 @@ def pairedFibPlus(samilingNum): #mode6: 加強凸型
         if temp > top:
             but += 1
             i = 0
-        if temp not in tempList: tempList.append(temp)
+        elif temp not in tempList: tempList.append(temp)
         if len(tempList) >= samilingNum//2: break
         i += 1
-    for i in tempList:
-        tempStr = ""
-        i_bin = format(i, 'b')
-        i_bin = i_bin.zfill(featureNum)
-        # 反向二進位 01交換
-        for j in range(featureNum):
-            if i_bin[j] == '0': tempStr+='1'
-            else : tempStr+='0'
-        i_r = int(tempStr,2)
-        if i_r not in tempList: tempList.append(i_r)
+    tempList = paired(tempList)
+    tempList.sort()
+    return tempList
+
+def randPairedFib(samplingNum): #mode7: 隨機費氏
+    top = 2**featureNum-1
+    but = (2**featureNum)//2
+    tempList = []
+    temp = 0
+    while True:
+        rand = random.randint(but, top)
+        i=0
+        while True:
+            if len(tempList) >= samplingNum//2: break
+            temp = fibonacci(i)
+            temp += rand
+            if temp > top: break
+            if temp not in tempList: tempList.append(temp)
+            i+=1
+        if len(tempList) >= samplingNum//2: break
+    tempList = paired(tempList)
     tempList.sort()
     return tempList
 
@@ -318,6 +316,8 @@ def sampling(sampling_num, mode=0): # 選擇抽樣方法
         samplingList = ldFibSampling(sampling_num)
     elif mode == 6:
         samplingList = pairedFibPlus(sampling_num)
+    elif mode == 7:
+        samplingList = randPairedFib(sampling_num)
     logging.info("結束抽樣")
 
     time_end = time.time() # 抽樣結束時間
@@ -369,7 +369,7 @@ def mainFunc():
     allShapValue = [] # 記錄每次計算的SHAP值
     
     for j in range(ROUND):
-        print(f"EXPLAIN_DATA_{EXPLAIN_DATA}, ROUND_{j}/{ROUND}, ID{ID[DATASET]}, MODE{MODE}")
+        print(f"EXPLAIN_DATA_{EXPLAIN_DATA}, ROUND_{j}/{ROUND}, ID{ID[DATASET]}, MODE{MODE}, SAMP{SAMPLING_NUM}")
         
         # samplingList: 特徵子集抽樣 array = 1~2**featureNum-1
         print(f"SAMPLING_NUM = {SAMPLING_NUM}")
@@ -406,7 +406,7 @@ def mainFunc():
             if loss > loss_max: loss_max = loss
             if loss < loss_min: loss_min = loss
             allLossList.append(loss)
-            loss_total += loss
+            loss_total += loss**2
             print(f"差距: {loss}")
             time_all_cost = time_end - time_start # 計算總耗時(抽樣時間+計算時間)
             print(f"time all cost(s): {time_all_cost}s")
@@ -416,15 +416,15 @@ def mainFunc():
             print(f"優化失敗: {result.message}")
         print("- - - "*5)
     if ROUND != 1:
-        if loss_total/ROUND < LOSS_LIMIT[EXPLAIN_DATA]:
+        if math.sqrt(loss_total) < LOSS_LIMIT[EXPLAIN_DATA]:
             countAll += 1
         if LOOPNUM > 1:
-            avgAll += loss_total/ROUND
+            avgAll += math.sqrt(loss_total)
         
         print(f"此為ID{ID[DATASET]}資料集, 解釋第{EXPLAIN_DATA}筆資料, mode{MODE}, 抽樣{SAMPLING_NUM}個, 總做了{ROUND}次")
         print(f"平均抽樣時間(s): {sampling_time_total/ROUND}s")
         print(f"平均時間(s): {time_total/ROUND}s")
-        print(f"平均差距: {loss_total/ROUND}")
+        print(f"L2差距: {math.sqrt(loss_total)}")
         print(f"最大差距: {loss_max}")
         print(f"最小差距: {loss_min}")
         print(f"小於{LOSS_LIMIT[EXPLAIN_DATA]}的次數: {count}")
@@ -437,17 +437,17 @@ def mainFunc():
         if not os.path.exists(AllList_LOC): os.makedirs(AllList_LOC)
         if not os.path.exists(SpaceList_LOC): os.makedirs(SpaceList_LOC)
         if not os.path.exists(AllShapValueList_LOC): os.makedirs(AllShapValueList_LOC)
-        np.savetxt(f"{AllLossList_LOC}\\AllLossList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allLossList)
-        np.savetxt(f"{AllList_LOC}\\AllList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allSampList)
-        np.savetxt(f"{SpaceList_LOC}\\SpaceList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allSpacList)
-        np.savetxt(f"{AllShapValueList_LOC}\\AllShapValueList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}.txt", allShapValue)
+        np.savetxt(f"{AllLossList_LOC}\\AllLossList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}_samp{SAMPLING_NUM}.txt", allLossList)
+        np.savetxt(f"{AllList_LOC}\\AllList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}_samp{SAMPLING_NUM}.txt", allSampList)
+        np.savetxt(f"{SpaceList_LOC}\\SpaceList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}_samp{SAMPLING_NUM}.txt", allSpacList)
+        np.savetxt(f"{AllShapValueList_LOC}\\AllShapValueList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}_samp{SAMPLING_NUM}.txt", allShapValue)
 
 if __name__=='__main__':
     LOOPNUM = 50 # 解釋資料數量
     DATASET = 0 # 選擇資料集
     ID = [186, 519, 563, 1, 165, 60, 544]
     EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
-    MODE = 3 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6
+    MODE = 3 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6, 隨機費氏:7
     COMP_MODE = 6
     # 隨機選取特徵子集的數量(mode4)
     SAMPLING_NUM_LIST = [32, 34, 36, 22, 22, 14, 46]
@@ -472,7 +472,7 @@ if __name__=='__main__':
     # Number of features(M)
     columns = X_train.columns.tolist()
     featureNum = len(columns)
-    SAMPLING_NUM = 5*featureNum
+    SAMPLING_NUM = 4*featureNum
 
     model = Model()
 

@@ -9,6 +9,7 @@ import numpy as np
 
 ID = 186
 MODE = 5
+COMP_MODE = 6
 ROUND = 50
 LOCATION = f"SHAPSampling\\result_data\\{ID}"
 
@@ -38,6 +39,13 @@ def get_AllLossList_L2(i):# 計算單筆AllLossList的L2
         loss = math.sqrt(loss)
     return loss
 
+def getLOSS(): # 計算lossLimit的L2
+    loss = 0
+    lossLimit = np.load(f"{LOCATION}\\LOSS\\loss_mode{COMP_MODE}.npy", allow_pickle=True).item()
+    for j in lossLimit:
+        loss += j**2
+    loss = math.sqrt(loss)
+    print(sum(lossLimit.values())/len(lossLimit))
+    print(loss)
 
-loss = get_AllLossList_L2(0)
-getAll_AllLossList_L2()
+getLOSS()
