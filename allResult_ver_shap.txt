@@ -8,6 +8,7 @@
     mode0
         countAll = 12
         avgAll = 0.47299369472931735
+        L2 = 198.8448314723728
     mode1
         countAll = 15
         avgAll = 0.4189877649598583
@@ -22,6 +23,7 @@
     mode5
         countAll = 3
         avgAll = 0.5402204388313098
+        L2 = 231.93335985917324
     mode5a 0.5
         countAll = 12
         avgAll = 0.4661060243203027
