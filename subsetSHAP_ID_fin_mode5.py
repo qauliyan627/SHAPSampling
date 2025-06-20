@@ -326,6 +326,9 @@ def sampling(sampling_num, mode=0): # 選擇抽樣方法
     print(f"samplingTime={samplingTime}")
     print(f"samplingList={samplingList}")
     print(f"len: {len(samplingList)}")
+    if len(samplingList) > sampling_num: 
+        logging.warning("len(samplingList) > sampling_num")
+        logging.warning(f"samplingList={samplingList}")
     return samplingList
     
 def getSpac(spList): # 取得抽樣結果中各元素的距離
