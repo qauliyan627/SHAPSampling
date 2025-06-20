@@ -431,6 +431,7 @@ def mainFunc():
         print(f"最大差距: {loss_max}")
         print(f"最小差距: {loss_min}")
         print(f"小於{LOSS_LIMIT[EXPLAIN_DATA]}的次數: {count}")
+        print({len(e) for e in allSampList})
         
         AllLossList_LOC = f"{LOCATION}\\AllLossList"
         AllList_LOC = f"{LOCATION}\\AllList"
