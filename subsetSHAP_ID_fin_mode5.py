@@ -214,7 +214,7 @@ def pairedSampling(): # mode4: 凸型配對(左右對稱)
     i = 2
     while True:
         temp = midNum + fibonacci(i)
-        if temp >= 2**featureNum: break
+        if temp >= 2**featureNum-1: break
         tempList.append(temp)
         i+=1
     # 反向配對
@@ -222,17 +222,17 @@ def pairedSampling(): # mode4: 凸型配對(左右對稱)
     return tempList
 
 def ldFibSampling(samplingNum): # mode5: 費氏數列 + 低差異序列想法(挑選最大區間抽樣) + 配對抽樣
-    top = 2**featureNum//2-1
-    but = 2**featureNum
+    top = 2**featureNum//2 - 1
+    but = 2**featureNum-2 + 1
     tempList = [top, but]
     n_top = top
     n_but = but
     for _ in range(samplingNum//2):
         # 計算最大可用費氏數
-        ran = n_but - n_top - 1
+        rang = n_but - n_top - 1
         maxFib = 0
         while True:
-            if ran < fibonacci(maxFib):
+            if rang < fibonacci(maxFib):
                 maxFib -= 1
                 break
             else: maxFib += 1
@@ -242,8 +242,8 @@ def ldFibSampling(samplingNum): # mode5: 費氏數列 + 低差異序列想法(�
             if n_top + ranFib not in tempList:
                 tempList.append(n_top + ranFib)
                 break
-        tempList.sort()
         # 找尋最大間距
+        tempList.sort()
         maxRange = 0
         for i in range(1, len(tempList)):
             t_top = tempList[i-1]
@@ -259,16 +259,16 @@ def ldFibSampling(samplingNum): # mode5: 費氏數列 + 低差異序列想法(�
     return tempList
 
 def pairedFibPlus(samilingNum): #mode6: 加強凸型
-    top = 2**featureNum-1
-    but = (2**featureNum)//2
+    top = 2**featureNum//2
+    but = 2**featureNum-2
     tempList = []
     temp = 0
     i = 0
     while True:
         temp = fibonacci(i)
-        temp += but
-        if temp > top:
-            but += 1
+        temp += top
+        if temp > but:
+            top += 1
             i = 0
         elif temp not in tempList: tempList.append(temp)
         if len(tempList) >= samilingNum//2: break
@@ -277,19 +277,19 @@ def pairedFibPlus(samilingNum): #mode6: 加強凸型
     tempList.sort()
     return tempList
 
-def randPairedFib(samplingNum): #mode7: 隨機費氏
-    top = 2**featureNum-1
-    but = (2**featureNum)//2
+def randPairedFib(samplingNum): #mode7: 隨機費氏配對
+    top = 2**featureNum//2
+    but = 2**featureNum-2
     tempList = []
     temp = 0
     while True:
-        rand = random.randint(but, top)
+        rand = random.randint(top, but)
         i=0
         while True:
             if len(tempList) >= samplingNum//2: break
-            temp = fibonacci(i)
-            temp += rand
-            if temp > top: break
+            fbiNum = fibonacci(i)
+            temp = rand + fbiNum
+            if temp > but: break
             if temp not in tempList: tempList.append(temp)
             i+=1
         if len(tempList) >= samplingNum//2: break
@@ -374,7 +374,7 @@ def mainFunc():
     for j in range(ROUND):
         print(f"EXPLAIN_DATA_{EXPLAIN_DATA}, ROUND_{j}/{ROUND}, ID{ID[DATASET]}, MODE{MODE}, SAMP{SAMPLING_NUM}")
         
-        # samplingList: 特徵子集抽樣 array = 1~2**featureNum-1
+        # samplingList: 特徵子集抽樣 array = 1~2**featureNum-2
         print(f"SAMPLING_NUM = {SAMPLING_NUM}")
         samplingList = sampling(SAMPLING_NUM, MODE)
         
@@ -479,7 +479,7 @@ if __name__=='__main__':
 
     model = Model()
 
-    #if SAMPLING_NUM >= 2**featureNum: SAMPLING_NUM = 2**featureNum-1
+    #if SAMPLING_NUM >= 2**featureNum: SAMPLING_NUM = 2**featureNum-2
     if LOOPNUM < 1 : LOOPNUM = 1
     for _ in range(LOOPNUM):
         binToAnsDict = {} # 紀錄已計算的預測結果
