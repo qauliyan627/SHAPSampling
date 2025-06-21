@@ -1,6 +1,7 @@
 import os
 import math
 import random
+import datetime
 import time
 import logging
 
@@ -76,43 +77,90 @@ def _Pi_x(subsetSize): # Kernel Weight: Pi_x()
     #print(weightNum)
     return weightNum
 
-def objective_function(variables):
-    total_sum = 0
-    for i in range(1,2**featureNum-1):
-        if i not in samplingList:
-            continue
-        i_bin = format(i, 'b')
-        i_bin = i_bin.zfill(featureNum)
-        transData = _h(i_bin)
-        tempTerm = midPredict
-        for k in range(featureNum):
-            if i_bin[k] == '1':
-                tempTerm += variables[k]
-        if i_bin in binToAnsDict.keys():
-            predictAns = binToAnsDict[i_bin]
-        else:
-            predictAns = model.predict(transData)
-            binToAnsDict[i_bin] = predictAns
-        term = ((predictAns - (tempTerm))**2)*_Pi_x(i_bin.count('1'))
-        total_sum += term
-    return total_sum
+def objective_matrix(param, X_mat, y_vec, W_mat):
+    params = [midPredict]
+    # params 現在是 [a, b, midPredict]
+    for i in range(featureNum):
+        params.append(param[i])
+    beta = np.array(params).reshape(-1, 1) # 將 params 轉換為 (2, 1) 的列向量
+    # np.insert(beta, -1, midPredict)
+    # 計算預測值向量 y_hat = X * beta
+    y_hat = X_mat @ beta # 矩陣乘法
 
-def equality_constraint(variables):
+    # 計算殘差向量 e = y - y_hat
+    errors = y_vec.reshape(-1, 1) - y_hat # 確保 y_vec 也是列向量進行廣播或明確 reshape
+
+    # 計算加權平方誤差：errors.T @ W @ errors
+    # np.dot(errors.T, W_mat @ errors) 也可以
+    weighted_squared_error = errors.T @ W_mat @ errors
+    
+    # minimize 函數期望一個標量返回值，所以我們取結果的第一個元素
+    return weighted_squared_error[0, 0]
+
+def equality_constraint(params):
     equaTerm = midPredict
     for i in range(featureNum):
-        equaTerm += variables[i]
+        equaTerm += params[i]
     equaTerm -= ansPredict
     return equaTerm  # 所有shapley value相加等於預測結果
 
+def toBinList(tenList): #將list轉換為二進制
+    tempList = []
+    for i in tenList:
+        i_bin = format(i, 'b')
+        i_bin = i_bin.zfill(featureNum)
+        i_bin = list(i_bin)
+        tempList.append(i_bin)
+    return tempList
+
+def getPredictList(binList):
+    tempList = []
+    modelOut = 0
+    for i in binList:
+        transData = _h("".join(i))
+        modelOut = model.predict(transData)
+        tempList.append(modelOut)
+    return tempList
+
+def getPixList(binList):
+    tempList = []
+    for i in binList:
+        tempList.append(_Pi_x("".join(i).count('1')))
+    return tempList
+
 def minimizeFunc():
-    initial_guess = np.arange(featureNum)
-    constraints = ({'type': 'eq', 'fun': equality_constraint})
-    options = {'maxiter': 10000}
     time_start = time.time()
-    result = minimize(objective_function, initial_guess, constraints=constraints, method='SLSQP') # 計算SHAP值
+    # 模擬 SHAP 問題（特徵數 p=3）
+    X = np.array(samplingList_bin)  # shape: (1 samples, {featureNum} features)
+    X_int = []
+    for i in X:
+        X_int.append(list(map(int, i)))
+    X = np.array(X_int)
+
+    y = np.array(getPredictList(samplingList_bin))     # 模型在子集 S 的值減 baseline
+    w = np.array(getPixList(samplingList_bin))     # Kernel SHAP 對應權重
+    
+    # 2. 準備矩陣形式的數據
+    # 構建特徵矩陣 X
+    # 這裡我們需要將 x_data 轉換為 (n, 1) 的形狀，然後添加一列 1
+    X_matrix = np.hstack((np.ones((SAMPLING_NUM, 1)), X)) # shape (n, 2)
+    # 構建權重對角矩陣 W
+    W_matrix = np.diag(w) # shape (n, n)
+    
+    initial_guess = np.arange(featureNum) # 初始猜測值 (phi_0, phi_1, ...)
+    constraints = ({'type': 'eq', 'fun': equality_constraint}) # 定義約束
+    # 5. 使用 scipy.optimize.minimize 進行優化
+    time_start = time.time()
+    result_matrix = minimize(
+        objective_matrix,
+        initial_guess,
+        args=(X_matrix, y, W_matrix), # 傳遞給目標函數的額外矩陣參數
+        method='SLSQP',
+        constraints=constraints
+    )
     time_end = time.time() # SHAP值計算結束時間
     print(f"計算時間={time_end - time_start}")
-    return result
+    return result_matrix
 
 def getLoss(optimal_variables): # 取得跟精準SHAP值的差距
     loss = 0
@@ -151,7 +199,7 @@ def paired(tempList):
 def randomSampling(samplingNum): #  mode0: 隨機
     tempList = []
     while True:
-        r = random.randint(1, 2**featureNum-1)
+        r = random.randint(1, 2**featureNum-2)
         if r in tempList:
             continue
         else:
@@ -364,7 +412,6 @@ def mainFunc():
     loss_total = 0
     loss_max = 0
     loss_min = 9999
-    count = 0
     
     allLossList = []
     allSampList = []
@@ -377,18 +424,42 @@ def mainFunc():
         # samplingList: 特徵子集抽樣 array = 1~2**featureNum-2
         print(f"SAMPLING_NUM = {SAMPLING_NUM}")
         samplingList = sampling(SAMPLING_NUM, MODE)
+        samplingList_bin = toBinList(samplingList)
         
-        initial_guess = np.arange(featureNum)
-        constraints = ({'type': 'eq', 'fun': equality_constraint})
-        options = {'maxiter': 10000}
+        # 模擬 SHAP 問題（特徵數 p=3）
+        X = np.array(samplingList_bin)  # shape: (1 samples, {featureNum} features)
+        X_int = []
+        for i in X:
+            X_int.append(list(map(int, i)))
+        X = np.array(X_int)
+
+        y = np.array(getPredictList(samplingList_bin))     # 模型在子集 S 的值減 baseline
+        w = np.array(getPixList(samplingList_bin))     # Kernel SHAP 對應權重
+        
+        # 2. 準備矩陣形式的數據
+        # 構建特徵矩陣 X
+        # 這裡我們需要將 x_data 轉換為 (n, 1) 的形狀，然後添加一列 1
+        X_matrix = np.hstack((np.ones((SAMPLING_NUM, 1)), X)) # shape (n, 2)
+        # 構建權重對角矩陣 W
+        W_matrix = np.diag(w) # shape (n, n)
+        
+        initial_guess = np.arange(featureNum) # 初始猜測值 (phi_0, phi_1, ...)
+        constraints = ({'type': 'eq', 'fun': equality_constraint}) # 定義約束
+        # 5. 使用 scipy.optimize.minimize 進行優化
         time_start = time.time()
-        result = minimize(objective_function, initial_guess, constraints=constraints, method='SLSQP') # 計算SHAP值
+        result_matrix = minimize(
+            objective_matrix,
+            initial_guess,
+            args=(X_matrix, y, W_matrix), # 傳遞給目標函數的額外矩陣參數
+            method='SLSQP',
+            constraints=constraints
+        )
         time_end = time.time() # SHAP值計算結束時間
-        if result.success:
-            minimum_value = result.fun
-            optimal_variables = result.x
+        if result_matrix.success:
+            minimum_value = result_matrix.fun
+            optimal_variables = result_matrix.x
             
-            print(f"找到最小值: {minimum_value}")
+            print(f"最小加權平方誤差: {minimum_value}")
             featureStr = f"對應的變數值: x0 = {optimal_variables[0]}"
             resultTemp = []
             resultTemp.append(optimal_variables[0])
@@ -403,20 +474,18 @@ def mainFunc():
             allShapValue.append(resultTemp) # 保存所以的ShapValue
             
             loss = getLoss(optimal_variables) # 取得和精準SHAP值之間的差距
+            allLossList.append(loss)
             if LOSS_LIMIT.get(EXPLAIN_DATA, -1) == -1:
                 LOSS_LIMIT = getLOSS()
-            if loss < LOSS_LIMIT[EXPLAIN_DATA]: count+=1 # 計算差距小於設定值的次數
             if loss > loss_max: loss_max = loss
             if loss < loss_min: loss_min = loss
-            allLossList.append(loss)
-            loss_total += loss**2
             print(f"差距: {loss}")
             time_all_cost = time_end - time_start # 計算總耗時(抽樣時間+計算時間)
             print(f"time all cost(s): {time_all_cost}s")
             time_total += time_all_cost
             print("LOSS_LIMIT=", LOSS_LIMIT)
         else:
-            print(f"優化失敗: {result.message}")
+            print(f"優化失敗: {result_matrix.message}")
         print("- - - "*5)
     if ROUND != 1:
         if math.sqrt(loss_total) < LOSS_LIMIT[EXPLAIN_DATA]:
@@ -426,11 +495,10 @@ def mainFunc():
         
         print(f"此為ID{ID[DATASET]}資料集, 解釋第{EXPLAIN_DATA}筆資料, mode{MODE}, 抽樣{SAMPLING_NUM}個, 總做了{ROUND}次")
         print(f"平均抽樣時間(s): {sampling_time_total/ROUND}s")
-        print(f"平均時間(s): {time_total/ROUND}s")
+        print(f"總時間(s): {time_total}s")
         print(f"L2差距: {math.sqrt(loss_total)}")
         print(f"最大差距: {loss_max}")
         print(f"最小差距: {loss_min}")
-        print(f"小於{LOSS_LIMIT[EXPLAIN_DATA]}的次數: {count}")
         
         AllLossList_LOC = f"{LOCATION}\\AllLossList"
         AllList_LOC = f"{LOCATION}\\AllList"
@@ -446,78 +514,87 @@ def mainFunc():
         np.savetxt(f"{AllShapValueList_LOC}\\AllShapValueList_mode{MODE}_exd{EXPLAIN_DATA}_round{ROUND}_samp{SAMPLING_NUM}.txt", allShapValue)
 
 if __name__=='__main__':
-    LOOPNUM = 50 # 解釋資料數量
-    DATASET = 0 # 選擇資料集
-    ID = [186, 519, 563, 1, 165, 60, 544]
-    EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
-    MODE = 6 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6, 隨機費氏:7
-    COMP_MODE = 6
-    # 隨機選取特徵子集的數量(mode4)
-    SAMPLING_NUM_LIST = [32, 34, 36, 22, 22, 14, 46]
-    SAMPLING_NUM = SAMPLING_NUM_LIST[DATASET]
-    ROUND = 50 # 要計算幾次
-    GOLDEN_RATIO = (5**0.5 - 1)/2
-    LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}\\mode{MODE}"
-    ANS_LOSS_LOC = f"SHAPSampling\\result_data\\{ID[DATASET]}"
-    if not os.path.exists(LOCATION): os.makedirs(LOCATION)
-    LOSS_LIMIT = dict()
+    SIMTIMES = 10
+    for _ in range(SIMTIMES):
+        DATETIME_START = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=8)))
+        LOOPNUM = 50 # 解釋資料數量
+        DATASET = 0 # 選擇資料集
+        ID = [186, 519, 563, 1, 165, 60, 544]
+        EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
+        MODE = 6 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6, 隨機費氏:7
+        COMP_MODE = 6
+        # 隨機選取特徵子集的數量(mode4)
+        SAMPLING_NUM_LIST = [32, 34, 36, 22, 22, 14, 46]
+        SAMPLING_NUM = SAMPLING_NUM_LIST[DATASET]
+        ROUND = 50 # 要計算幾次
+        GOLDEN_RATIO = (5**0.5 - 1)/2
+        LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}\\simTime{SIMTIMES}\\mode{MODE}"
+        ANS_LOSS_LOC = f"SHAPSampling\\result_data\\{ID[DATASET]}"
+        if not os.path.exists(LOCATION): os.makedirs(LOCATION)
+        LOSS_LIMIT = dict()
 
-    totalTime_s = time.time()
-    reCalcu = False #是否重新計算ANS_LIST
-    ansPath = f"{ANS_LOSS_LOC}\\ANS"
-    lossPath = f"{ANS_LOSS_LOC}\\LOSS"
-    fibonacciSeq = {0:0, 1:1}
+        totalTime_s = time.time()
+        reCalcu = False #是否重新計算ANS_LIST
+        ansPath = f"{ANS_LOSS_LOC}\\ANS"
+        lossPath = f"{ANS_LOSS_LOC}\\LOSS"
+        fibonacciSeq = {0:0, 1:1}
 
-    countAll = 0
-    avgAll = 0
+        countAll = 0
+        avgAll = 0
 
-    X_train, X_test, y_train, y_test = _setData()
-    # Number of features(M)
-    columns = X_train.columns.tolist()
-    featureNum = len(columns)
-    SAMPLING_NUM = 4*featureNum
+        X_train, X_test, y_train, y_test = _setData()
+        # Number of features(M)
+        columns = X_train.columns.tolist()
+        featureNum = len(columns)
+        SAMPLING_NUM = 4*featureNum
 
-    model = Model()
+        model = Model()
 
-    #if SAMPLING_NUM >= 2**featureNum: SAMPLING_NUM = 2**featureNum-2
-    if LOOPNUM < 1 : LOOPNUM = 1
-    for _ in range(LOOPNUM):
-        binToAnsDict = {} # 紀錄已計算的預測結果
-        # predict data
-        X_predictData = X_test.iloc[[EXPLAIN_DATA]]
-        dtypeDict = X_train.dtypes.apply(lambda x: x.name).to_dict()
-        midData = pd.DataFrame([X_test.median()])
-        midData = midData.astype(dtypeDict)
-        ansPredict, midPredict = model.getAnsAndMidPredict()
+        print(f"StartTime={DATETIME_START}")
+        #if SAMPLING_NUM >= 2**featureNum: SAMPLING_NUM = 2**featureNum-2
+        if LOOPNUM < 1 : LOOPNUM = 1
+        for _ in range(LOOPNUM):
+            binToAnsDict = {} # 紀錄已計算的預測結果
+            # predict data
+            X_predictData = X_test.iloc[[EXPLAIN_DATA]]
+            dtypeDict = X_train.dtypes.apply(lambda x: x.name).to_dict()
+            midData = pd.DataFrame([X_test.median()])
+            midData = midData.astype(dtypeDict)
+            ansPredict, midPredict = model.getAnsAndMidPredict()
 
-        if not os.path.exists(ansPath): os.makedirs(ansPath)
-        if not os.path.exists(lossPath): os.makedirs(lossPath)
+            if not os.path.exists(ansPath): os.makedirs(ansPath)
+            if not os.path.exists(lossPath): os.makedirs(lossPath)
 
-        if not os.path.exists(ansPath + f"\\ans_{EXPLAIN_DATA}.txt") or reCalcu:
-            ANS_LIST = _getExactShapValue(model.model)
-        else: ANS_LIST = np.loadtxt(ansPath + f"\\ans_{EXPLAIN_DATA}.txt") # 全包含的SHAP值(精準SHAP值)
+            if not os.path.exists(ansPath + f"\\ans_{EXPLAIN_DATA}.txt") or reCalcu:
+                ANS_LIST = _getExactShapValue(model.model)
+            else: ANS_LIST = np.loadtxt(ansPath + f"\\ans_{EXPLAIN_DATA}.txt") # 全包含的SHAP值(精準SHAP值)
 
-        if not os.path.exists(lossPath + f"\\loss_mode{COMP_MODE}.npy"): 
-            samplingList = sampling("COMP_MODE")
-            LOSS_LIMIT = getLOSS()
-        else:
-            with open(lossPath + f"\\loss_mode{COMP_MODE}.npy", 'rb') as file:
-                LOSS_LIMIT = np.load(file, allow_pickle=True).item() # 字典[EXPLAIN_DATA] 保存上限設定值(mode4)
-            if LOSS_LIMIT.get(EXPLAIN_DATA, -1) <= 0:
+            if not os.path.exists(lossPath + f"\\loss_mode{COMP_MODE}.npy"): 
                 samplingList = sampling("COMP_MODE")
+                samplingList_bin = toBinList(samplingList)
                 LOSS_LIMIT = getLOSS()
+            else:
+                with open(lossPath + f"\\loss_mode{COMP_MODE}.npy", 'rb') as file:
+                    LOSS_LIMIT = np.load(file, allow_pickle=True).item() # 字典[EXPLAIN_DATA] 保存上限設定值(mode4)
+                if LOSS_LIMIT.get(EXPLAIN_DATA, -1) <= 0:
+                    samplingList = sampling("COMP_MODE")
+                    samplingList_bin = toBinList(samplingList)
+                    LOSS_LIMIT = getLOSS()
 
-        print("ANS_LIST=",ANS_LIST)
-        print("LOSS_LIMIT=",LOSS_LIMIT) 
+            print("ANS_LIST=",ANS_LIST)
+            print("LOSS_LIMIT=",LOSS_LIMIT) 
 
-        if MODE == COMP_MODE: ROUND = 1
-        mainFunc()
-        EXPLAIN_DATA += 1
-        
-    totalTime_e = time.time()
-    print("* * * "*5)
-    print(f"LOOPNUM_{LOOPNUM}, ROUND_{ROUND}, ID{ID[DATASET]}, MODE{MODE}")
-    print("countAll =",countAll)
-    print("avgAll =", avgAll/LOOPNUM)
-    print(f"總花費時間: {(totalTime_e-totalTime_s)/60}m")
-    print("* * * "*5)
+            if MODE == COMP_MODE: ROUND = 1
+            mainFunc()
+            EXPLAIN_DATA += 1
+            
+        totalTime_e = time.time()
+        DATETIME_END = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=8)))
+        print("* * * "*5)
+        print(f"LOOPNUM_{LOOPNUM}, ROUND_{ROUND}, ID{ID[DATASET]}, MODE{MODE}")
+        print(f"StartTime={DATETIME_START}")
+        print(f"EndTime={DATETIME_END}")
+        print(f"總花費時間: {(totalTime_e-totalTime_s)/60}m")
+        print("countAll =",countAll)
+        print("avgAll =", avgAll/LOOPNUM)
+        print("* * * "*5)
