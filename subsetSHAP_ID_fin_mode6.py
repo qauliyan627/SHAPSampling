@@ -35,10 +35,9 @@ class Model():
         return prediction_pandas
 
 def _setData(): # import dataset
-    uciDataset = fetch_ucirepo(id=ID[DATASET])
-    # Feature Engineering
-    X = uciDataset.data.features
-    y = uciDataset.data.targets
+    X = pd.read_csv(DATASET_LOC + "\\X.csv")
+    y = pd.read_csv(DATASET_LOC + "\\y.csv")
+    
     cat_columns = X.select_dtypes(['object']).columns
     if len(cat_columns) > 0:
         for cc in cat_columns:
@@ -373,11 +372,7 @@ def sampling(sampling_num, mode=0): # 選擇抽樣方法
     logging.info("結束抽樣")
 
     time_end = time.time() # 抽樣結束時間
-    samplingTime = time_end - time_start # 計算抽樣時間
     samplingList.sort()
-    print(f"samplingTime={samplingTime}")
-    print(f"samplingList={samplingList}")
-    print(f"len: {len(samplingList)}")
     if len(samplingList) > sampling_num: 
         logging.warning("len(samplingList) > sampling_num")
         logging.warning(f"samplingList={samplingList}")
@@ -479,13 +474,15 @@ def mainFunc():
             allSpacList.append(getSpac(samplingList))# 保存全部子集組合的子集間距離
             allShapValue.append(resultTemp) # 保存所以的ShapValue
             
-            print(f"EXPLAIN_DATA_{EXPLAIN_DATA}, ROUND_{j}/{ROUND}, ID{ID[DATASET]}, MODE{MODE}, SAMP{SAMPLING_NUM}")
+            print(f"DS_NAME:{DS_NAME[DATASET]}, EXPLAIN_DATA_{EXPLAIN_DATA}, ROUND_{j}/{ROUND}||{simTime}, MODE{MODE}, SAMP{SAMPLING_NUM}")
             print(f"最小加權平方誤差: {minimum_value}")
             print(featureStr)
             print(f"中間預測值: {midPredict}")
             print(f"差距: {loss}")
             print(f"time all cost(s): {time_all_cost}s")
             print("LOSS_LIMIT=", LOSS_LIMIT)
+            print(f"samplingList={samplingList}")
+            print(f"len: {len(samplingList)}")
         else:
             print(f"優化失敗: {result_matrix.message}")
         print("- - - "*5)
@@ -496,12 +493,13 @@ def mainFunc():
         if LOOPNUM > 1:
             allLoop_loss_l2 += loss_total_avg**2
         
-        print(f"此為ID{ID[DATASET]}資料集, 解釋第{EXPLAIN_DATA}筆資料, mode{MODE}, 抽樣{SAMPLING_NUM}個, 總做了{ROUND}次")
+        print(f"此為DS_NAME:{DS_NAME[DATASET]}資料集, 解釋第{EXPLAIN_DATA}筆資料, mode{MODE}, 抽樣{SAMPLING_NUM}個, 總做了{ROUND}次")
         print(f"平均抽樣時間(s): {sampling_time_total/ROUND}s")
         print(f"總時間(s): {time_total}s")
         print(f"平均差距: {loss_total_avg}")
         print(f"最大差距: {loss_max}")
         print(f"最小差距: {loss_min}")
+        print("+ + + "*5)
         
         AllLossList_LOC = f"{LOCATION}\\AllLossList"
         AllList_LOC = f"{LOCATION}\\AllList"
@@ -522,7 +520,7 @@ if __name__=='__main__':
         DATETIME_START = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=8)))
         LOOPNUM = 50 # 解釋資料數量
         DATASET = 0 # 選擇資料集
-        ID = [186, 519, 563, 1, 165, 60, 544]
+        DS_NAME = ['adult', 'airline', 'breast', 'diabetes', 'heart', 'iris']
         EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
         MODE = 6 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6, 隨機費氏:7
         COMP_MODE = 6
@@ -531,8 +529,9 @@ if __name__=='__main__':
         SAMPLING_NUM = SAMPLING_NUM_LIST[DATASET]
         ROUND = 50 # 要計算幾次
         GOLDEN_RATIO = (5**0.5 - 1)/2
-        LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}\\simTime{simTime}\\mode{MODE}"
-        ANS_LOSS_LOC = f"SHAPSampling\\result_data\\{ID[DATASET]}"
+        DATASET_LOC = f"SHAPSampling\\Datasets\\{DS_NAME[DATASET]}\\"
+        LOCATION = f"SHAPSampling\\result_data\\{DS_NAME[DATASET]}\\simTime{simTime}\\mode{MODE}"
+        ANS_LOSS_LOC = f"SHAPSampling\\result_data\\{DS_NAME[DATASET]}"
         if not os.path.exists(LOCATION): os.makedirs(LOCATION)
         LOSS_LIMIT = dict()
 
@@ -594,7 +593,7 @@ if __name__=='__main__':
         totalTime_e = time.time()
         DATETIME_END = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=8)))
         print("* * * "*5)
-        print(f"LOOPNUM_{LOOPNUM}, ROUND_{ROUND}, ID{ID[DATASET]}, MODE{MODE}")
+        print(f"LOOPNUM_{LOOPNUM}, ROUND_{ROUND}, DS_NAME:{DS_NAME[DATASET]}, MODE{MODE}")
         print(f"StartTime={DATETIME_START}")
         print(f"EndTime={DATETIME_END}")
         print(f"總花費時間: {(totalTime_e-totalTime_s)/60}m")
