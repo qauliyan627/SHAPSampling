@@ -35,8 +35,8 @@ class Model():
         return prediction_pandas
 
 def _setData(): # import dataset
-    X = pd.read_csv(DATASET_LOC + "\\X.csv")
-    y = pd.read_csv(DATASET_LOC + "\\y.csv")
+    X = pd.read_csv(DATASET_LOC + "X.csv")
+    y = pd.read_csv(DATASET_LOC + "y.csv")
     
     cat_columns = X.select_dtypes(['object']).columns
     if len(cat_columns) > 0:
