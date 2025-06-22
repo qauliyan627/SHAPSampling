@@ -170,6 +170,10 @@ def getLoss(optimal_variables): # 取得跟精準SHAP值的差距
     print("loss in getLoss:",loss)
     return loss
 
+def my_round(number, ndigits=0):
+    p = 10**ndigits
+    return (number * p * 2 + 1) // 2 / p
+
 def fibonacci(n): # 計算費氏數
     if n == 0: return 0
     elif n == 1: return 1
@@ -404,7 +408,7 @@ def getLOSS(): # 計算LOSS_LIMIT(COMP_MODE)
 def mainFunc():
     global LOSS_LIMIT
     global samplingList
-    global avgAll
+    global allLoop_loss_l2
     global countAll
     samplingList = []
     time_total = 0
@@ -419,24 +423,17 @@ def mainFunc():
     allShapValue = [] # 記錄每次計算的SHAP值
     
     for j in range(ROUND):
-        print(f"EXPLAIN_DATA_{EXPLAIN_DATA}, ROUND_{j}/{ROUND}, ID{ID[DATASET]}, MODE{MODE}, SAMP{SAMPLING_NUM}")
-        
         # samplingList: 特徵子集抽樣 array = 1~2**featureNum-2
-        print(f"SAMPLING_NUM = {SAMPLING_NUM}")
         samplingList = sampling(SAMPLING_NUM, MODE)
         samplingList_bin = toBinList(samplingList)
         
-        # 模擬 SHAP 問題（特徵數 p=3）
         X = np.array(samplingList_bin)  # shape: (1 samples, {featureNum} features)
         X_int = []
         for i in X:
             X_int.append(list(map(int, i)))
         X = np.array(X_int)
-
         y = np.array(getPredictList(samplingList_bin))     # 模型在子集 S 的值減 baseline
         w = np.array(getPixList(samplingList_bin))     # Kernel SHAP 對應權重
-        
-        # 2. 準備矩陣形式的數據
         # 構建特徵矩陣 X
         # 這裡我們需要將 x_data 轉換為 (n, 1) 的形狀，然後添加一列 1
         X_matrix = np.hstack((np.ones((SAMPLING_NUM, 1)), X)) # shape (n, 2)
@@ -454,49 +451,55 @@ def mainFunc():
             method='SLSQP',
             constraints=constraints
         )
+        
         time_end = time.time() # SHAP值計算結束時間
         if result_matrix.success:
             minimum_value = result_matrix.fun
             optimal_variables = result_matrix.x
             
-            print(f"最小加權平方誤差: {minimum_value}")
-            featureStr = f"對應的變數值: x0 = {optimal_variables[0]}"
+            featureStr = f"對應的變數值: x0 = "
             resultTemp = []
-            resultTemp.append(optimal_variables[0])
-            for i in range(1, featureNum): 
+            for i in range(0, featureNum): 
+                featureStr += f"x{i} = {my_round(optimal_variables[i],5)}, "
                 resultTemp.append(optimal_variables[i])
-                featureStr += f", x{i} = {optimal_variables[i]}"
-            print(featureStr)
-            print(f"中間預測值: {midPredict}")
-            
-            allSampList.append(samplingList)# 保存全部子集組合的抽樣結果
-            allSpacList.append(getSpac(samplingList))# 保存全部子集組合的子集間距離
-            allShapValue.append(resultTemp) # 保存所以的ShapValue
+            featureStr = featureStr[:-2]
             
             loss = getLoss(optimal_variables) # 取得和精準SHAP值之間的差距
-            allLossList.append(loss)
+            loss_total += loss
             if LOSS_LIMIT.get(EXPLAIN_DATA, -1) == -1:
                 LOSS_LIMIT = getLOSS()
             if loss > loss_max: loss_max = loss
             if loss < loss_min: loss_min = loss
-            print(f"差距: {loss}")
+            
             time_all_cost = time_end - time_start # 計算總耗時(抽樣時間+計算時間)
-            print(f"time all cost(s): {time_all_cost}s")
             time_total += time_all_cost
+            
+            allLossList.append(loss)
+            allSampList.append(samplingList)# 保存全部子集組合的抽樣結果
+            allSpacList.append(getSpac(samplingList))# 保存全部子集組合的子集間距離
+            allShapValue.append(resultTemp) # 保存所以的ShapValue
+            
+            print(f"EXPLAIN_DATA_{EXPLAIN_DATA}, ROUND_{j}/{ROUND}, ID{ID[DATASET]}, MODE{MODE}, SAMP{SAMPLING_NUM}")
+            print(f"最小加權平方誤差: {minimum_value}")
+            print(featureStr)
+            print(f"中間預測值: {midPredict}")
+            print(f"差距: {loss}")
+            print(f"time all cost(s): {time_all_cost}s")
             print("LOSS_LIMIT=", LOSS_LIMIT)
         else:
             print(f"優化失敗: {result_matrix.message}")
         print("- - - "*5)
     if ROUND != 1:
-        if math.sqrt(loss_total) < LOSS_LIMIT[EXPLAIN_DATA]:
+        loss_total_avg = loss_total/ROUND
+        if loss_total_avg < LOSS_LIMIT[EXPLAIN_DATA]:
             countAll += 1
         if LOOPNUM > 1:
-            avgAll += math.sqrt(loss_total)
+            allLoop_loss_l2 += loss_total_avg**2
         
         print(f"此為ID{ID[DATASET]}資料集, 解釋第{EXPLAIN_DATA}筆資料, mode{MODE}, 抽樣{SAMPLING_NUM}個, 總做了{ROUND}次")
         print(f"平均抽樣時間(s): {sampling_time_total/ROUND}s")
         print(f"總時間(s): {time_total}s")
-        print(f"L2差距: {math.sqrt(loss_total)}")
+        print(f"平均差距: {loss_total_avg}")
         print(f"最大差距: {loss_max}")
         print(f"最小差距: {loss_min}")
         
@@ -515,7 +518,7 @@ def mainFunc():
 
 if __name__=='__main__':
     SIMTIMES = 10
-    for _ in range(SIMTIMES):
+    for simTime in range(SIMTIMES):
         DATETIME_START = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=8)))
         LOOPNUM = 50 # 解釋資料數量
         DATASET = 0 # 選擇資料集
@@ -528,7 +531,7 @@ if __name__=='__main__':
         SAMPLING_NUM = SAMPLING_NUM_LIST[DATASET]
         ROUND = 50 # 要計算幾次
         GOLDEN_RATIO = (5**0.5 - 1)/2
-        LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}\\simTime{SIMTIMES}\\mode{MODE}"
+        LOCATION = f"SHAPSampling\\result_data\\{ID[DATASET]}\\simTime{simTime}\\mode{MODE}"
         ANS_LOSS_LOC = f"SHAPSampling\\result_data\\{ID[DATASET]}"
         if not os.path.exists(LOCATION): os.makedirs(LOCATION)
         LOSS_LIMIT = dict()
@@ -540,7 +543,7 @@ if __name__=='__main__':
         fibonacciSeq = {0:0, 1:1}
 
         countAll = 0
-        avgAll = 0
+        allLoop_loss_l2 = 0
 
         X_train, X_test, y_train, y_test = _setData()
         # Number of features(M)
@@ -596,5 +599,5 @@ if __name__=='__main__':
         print(f"EndTime={DATETIME_END}")
         print(f"總花費時間: {(totalTime_e-totalTime_s)/60}m")
         print("countAll =",countAll)
-        print("avgAll =", avgAll/LOOPNUM)
+        print("allLoop_loss_l2 =", math.sqrt(allLoop_loss_l2))
         print("* * * "*5)
