@@ -422,7 +422,6 @@ def mainFunc():
         print(f"EXPLAIN_DATA_{EXPLAIN_DATA}, ROUND_{j}/{ROUND}, ID{ID[DATASET]}, MODE{MODE}, SAMP{SAMPLING_NUM}")
         
         # samplingList: 特徵子集抽樣 array = 1~2**featureNum-2
-        print(f"SAMPLING_NUM = {SAMPLING_NUM}")
         samplingList = sampling(SAMPLING_NUM, MODE)
         samplingList_bin = toBinList(samplingList)
         
@@ -550,7 +549,6 @@ if __name__=='__main__':
 
         model = Model()
 
-        print(f"StartTime={DATETIME_START}")
         #if SAMPLING_NUM >= 2**featureNum: SAMPLING_NUM = 2**featureNum-2
         if LOOPNUM < 1 : LOOPNUM = 1
         for _ in range(LOOPNUM):
@@ -580,9 +578,6 @@ if __name__=='__main__':
                     samplingList = sampling("COMP_MODE")
                     samplingList_bin = toBinList(samplingList)
                     LOSS_LIMIT = getLOSS()
-
-            print("ANS_LIST=",ANS_LIST)
-            print("LOSS_LIMIT=",LOSS_LIMIT) 
 
             if MODE == COMP_MODE: ROUND = 1
             mainFunc()
