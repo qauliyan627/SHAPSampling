@@ -3,10 +3,10 @@ import os
 import pandas as pd
 import numpy as np
 
-DATANAME = "breast"
+DATANAME = "airline"
 target = "diagnosis"
-SPLIT = 1
-SAVE = 1
+SPLIT = 0
+SAVE = 0
 
 DATAPATH = "SHAPSampling\\Datasets\\Origin\\"
 SAVEPATH = f"SHAPSampling\\Datasets\\{DATANAME}\\"
