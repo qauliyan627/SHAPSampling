@@ -401,6 +401,7 @@ def getLOSS(): # 計算LOSS_LIMIT(COMP_MODE)
         print(f"優化失敗: {result.message}")
 
 def mainFunc():
+    global SAMPLING_NUM
     global LOSS_LIMIT
     global samplingList
     global allLoop_loss_l2
@@ -420,6 +421,7 @@ def mainFunc():
     for j in range(ROUND):
         # samplingList: 特徵子集抽樣 array = 1~2**featureNum-2
         samplingList = sampling(SAMPLING_NUM, MODE)
+        if len(samplingList) != SAMPLING_NUM: SAMPLING_NUM = len(samplingList)
         samplingList_bin = toBinList(samplingList)
         
         X = np.array(samplingList_bin)  # shape: (1 samples, {featureNum} features)
@@ -519,7 +521,7 @@ if __name__=='__main__':
     for simTime in range(SIMTIMES):
         DATETIME_START = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=8)))
         LOOPNUM = 50 # 解釋資料數量
-        DATASET = 0 # 選擇資料集
+        DATASET = 1 # 選擇資料集
         DS_NAME = ['adult', 'airline', 'breast', 'diabetes', 'heart', 'iris']
         EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
         MODE = 4 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6, 隨機費氏:7
