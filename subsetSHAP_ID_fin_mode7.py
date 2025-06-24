@@ -308,7 +308,7 @@ def ldFibSampling(samplingNum): # mode5: 費氏數列 + 低差異序列想法(�
     tempList.sort()
     return tempList
 
-def pairedFibPlus(samilingNum): #mode6: 加強凸型
+def pairedFibPlus(samplingNum): #mode6: 加強凸型
     top = 2**featureNum//2
     but = 2**featureNum-2
     tempList = []
@@ -321,28 +321,29 @@ def pairedFibPlus(samilingNum): #mode6: 加強凸型
             top += 1
             i = 0
         elif temp not in tempList: tempList.append(temp)
-        if len(tempList) >= samilingNum//2: break
+        if len(tempList) >= samplingNum//2: break
         i += 1
     tempList = paired(tempList)
     tempList.sort()
     return tempList
 
-def randPairedFib(samplingNum): #mode7: 隨機費氏配對
+def pairedFibPlus2(samplingNum): #mode7: 加強凸型2
     top = 2**featureNum//2
     but = 2**featureNum-2
     tempList = []
     temp = 0
+    i = 0
     while True:
-        rand = random.randint(top, but)
-        i=0
-        while True:
-            if len(tempList) >= samplingNum//2: break
-            fbiNum = fibonacci(i)
-            temp = rand + fbiNum
-            if temp > but: break
-            if temp not in tempList: tempList.append(temp)
-            i+=1
+        temp = fibonacci(i)
+        temp += top
+        if temp > but:
+            while True:
+                top += 1
+                if top not in tempList: break
+            i = 0
+        elif temp not in tempList: tempList.append(temp)
         if len(tempList) >= samplingNum//2: break
+        i += 1
     tempList = paired(tempList)
     tempList.sort()
     return tempList
@@ -367,7 +368,7 @@ def sampling(sampling_num, mode=0): # 選擇抽樣方法
     elif mode == 6:
         samplingList = pairedFibPlus(sampling_num)
     elif mode == 7:
-        samplingList = randPairedFib(sampling_num)
+        samplingList = pairedFibPlus2(sampling_num)
     logging.info("結束抽樣")
 
     time_end = time.time() # 抽樣結束時間
