@@ -308,7 +308,7 @@ def ldFibSampling(samplingNum): # mode5: 費氏數列 + 低差異序列想法(�
     tempList.sort()
     return tempList
 
-def pairedFibPlus(samilingNum): #mode6: 加強凸型
+def pairedFibPlus(samplingNum): #mode6: 加強凸型
     top = 2**featureNum//2
     but = 2**featureNum-2
     tempList = []
@@ -319,30 +319,64 @@ def pairedFibPlus(samilingNum): #mode6: 加強凸型
         temp += top
         if temp > but:
             top += 1
-            i = 0
+            i = -1
         elif temp not in tempList: tempList.append(temp)
-        if len(tempList) >= samilingNum//2: break
+        if len(tempList) >= samplingNum//2: break
         i += 1
     tempList = paired(tempList)
     tempList.sort()
     return tempList
 
-def randPairedFib(samplingNum): #mode7: 隨機費氏配對
+def pairedFibPlus2(samplingNum): #mode7: 加強凸型2
     top = 2**featureNum//2
     but = 2**featureNum-2
     tempList = []
     temp = 0
+    i = 0
     while True:
-        rand = random.randint(top, but)
-        i=0
-        while True:
-            if len(tempList) >= samplingNum//2: break
-            fbiNum = fibonacci(i)
-            temp = rand + fbiNum
-            if temp > but: break
-            if temp not in tempList: tempList.append(temp)
-            i+=1
+        temp = fibonacci(i)
+        temp += top
+        if temp > but:
+            while True:
+                top += 1
+                if top not in tempList: break
+            i = -1
+        elif temp not in tempList: tempList.append(temp)
         if len(tempList) >= samplingNum//2: break
+        i += 1
+    tempList = paired(tempList)
+    tempList.sort()
+    return tempList
+
+def randomMultipleFib(samplingNum): #mode8: 隨機倍數費氏 + 低差異 + 配對
+    top = 2**featureNum//2 - 1
+    but = 2**featureNum-2 + 1
+    tempList = [top, but]
+    n_top = top
+    n_but = but
+    maxRange = n_but-n_top-1
+    while True:
+        i = 1
+        multi = random.randint(i, maxRange) # 隨機倍數
+        while True: # 抽樣
+            temp = n_top + fibonacci(i) * multi
+            if temp >= n_but: break
+            if temp not in tempList: tempList.append(temp)
+            if len(tempList) >= samplingNum//2+2: break
+            i += 1
+        if len(tempList) >= samplingNum//2+2: break
+        # 找尋最大間距
+        tempList.sort()
+        maxRange = 0
+        for i in range(1, len(tempList)):
+            t_top = tempList[i-1]
+            t_but = tempList[i]
+            if maxRange < t_but-t_top:
+                n_top = t_top
+                n_but = t_but
+                maxRange = t_but-t_top-1
+    tempList.remove(top)
+    tempList.remove(but)
     tempList = paired(tempList)
     tempList.sort()
     return tempList
@@ -367,7 +401,9 @@ def sampling(sampling_num, mode=0): # 選擇抽樣方法
     elif mode == 6:
         samplingList = pairedFibPlus(sampling_num)
     elif mode == 7:
-        samplingList = randPairedFib(sampling_num)
+        samplingList = pairedFibPlus2(sampling_num)
+    elif mode == 8:
+        samplingList = randomMultipleFib(sampling_num)
     logging.info("結束抽樣")
 
     time_end = time.time() # 抽樣結束時間
@@ -521,9 +557,9 @@ if __name__=='__main__':
         DATASET = 0 # 選擇資料集
         DS_NAME = ['adult', 'airline', 'breast', 'diabetes', 'heart', 'iris']
         EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
-        MODE = 5 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6, 隨機費氏:7
+        MODE = 5 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6, 隨機費氏:7, 倍數費氏:8
         COMP_MODE = 6
-        ROUND = 50 # 要計算幾次
+        ROUND = 1 # 要計算幾次
         GOLDEN_RATIO = (5**0.5 - 1)/2
         DATASET_LOC = f"SHAPSampling\\Datasets\\{DS_NAME[DATASET]}\\"
         LOCATION = f"SHAPSampling\\result_data\\{DS_NAME[DATASET]}\\simTime{simTime}\\mode{MODE}"
@@ -579,7 +615,7 @@ if __name__=='__main__':
                     samplingList_bin = toBinList(samplingList)
                     LOSS_LIMIT = getLOSS()
 
-            if MODE == COMP_MODE: ROUND = 1
+            if MODE == COMP_MODE or MODE == 7: ROUND = 1
             mainFunc()
             EXPLAIN_DATA += 1
             
