@@ -51,6 +51,11 @@ def _setData(): # import dataset
     print(X)
     print(y)
     
+    # 隨機交換資料集的特徵列
+    cols = X.columns.tolist()
+    shuffled_cols = np.random.permutation(cols).tolist()
+    X = X[shuffled_cols]
+    
     ## predictors only
     X_train, X_test, y_train, y_test = train_test_split(X,
                                                         y,
