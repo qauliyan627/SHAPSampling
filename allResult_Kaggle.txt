@@ -1,7 +1,0 @@
-- Iris Species #5
-- Heart Failure Prediction Dataset #11 
-- Adult Census Income #14
-- Diabetes Dataset 2019 #17 #https://www.kaggle.com/datasets/tigganeha4/diabetes-dataset-2019
-- Airline Passenger Satisfaction #24
-- Airline Passenger Satisfaction #31
-- Introvert, Extrovert & Ambivert Classification #29
