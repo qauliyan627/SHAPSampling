@@ -7,18 +7,18 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-DS_ID = 0
+DS_ID = 1
 DS_NAME = ['adult', 'airline', 'breast', 'diabetes', 'heart', 'iris', 'IEAClassification']
 DS_SAMPNUM = [56, 88, 120, 68, 44]
 MODE4_SAMP = [40, 62, 86, 48, 32]
 SIM_TIME = 0
-MODE = 0
+MODE = 4
 COMP_MODE = 6
 ROUND = 50
 SAMP = DS_SAMPNUM[DS_ID]
 if MODE == 4:SAMP=MODE4_SAMP[DS_ID]
 LOCATION = f"SHAPSampling\\result_data\\{DS_NAME[DS_ID]}"
-if MODE == 6 or MODE == 7: ROUND = 1
+if MODE==4 or MODE==6 or MODE==7: ROUND = 1
 
 def my_round(number, ndigits=0):
     p = 10**ndigits
@@ -31,7 +31,7 @@ def getL2(numList):
     l2 = math.sqrt(l2)
     return l2
         
-def getAll_AllLossList_L2():# 計算AllLossList的L2
+def get_AllLossList_L2():# 計算AllLossList的L2
     simTime = SIM_TIME
     i = 0
     avgL2 = 0
@@ -57,7 +57,7 @@ def getAll_AllLossList_L2():# 計算AllLossList的L2
             simTime+=1
         if not os.path.exists(LOCATION + f"\\simTime{simTime}"): break
 
-def get_AllLossList_L2(i):# 計算單筆AllLossList的L2
+def get_OneLossList_L2(i):# 計算單筆AllLossList的L2
     loss = 0
     if os.path.exists(LOCATION + f"\\mode{MODE}\\AllLossList" + f"\\AllLossList_mode{MODE}_exd{i}_round{ROUND}.txt"):
         #輸入AllLossList
@@ -149,5 +149,5 @@ def SHAPvalL2_AllListLayerL2_scatter():
         plt.show()
         simTime+=1
 
-# getAll_AllLossList_L2()
-SHAPvalL2_sampListGapL2_scatter()
+get_AllLossList_L2()
+# SHAPvalL2_sampListGapL2_scatter()
