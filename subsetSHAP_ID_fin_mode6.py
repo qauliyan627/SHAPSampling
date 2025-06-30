@@ -387,7 +387,6 @@ def randomMultipleFib(samplingNum): #mode8: 隨機倍數費氏 + 低差異 + 配
     return tempList
 
 def sampling(sampling_num, mode=0): # 選擇抽樣方法
-    time_start = time.time() # 開始計算時間
     if sampling_num == "COMP_MODE":
         mode = COMP_MODE
         if mode==6: sampling_num=SAMPLING_NUM
@@ -415,9 +414,7 @@ def sampling(sampling_num, mode=0): # 選擇抽樣方法
     if len(samplingList) > sampling_num: 
         logging.warning("len(samplingList) > sampling_num")
         logging.warning(f"samplingList={samplingList}")
-    print("A:",samplingList[0])
     samplingList = shuffleSampList(samplingList)
-    print("B",samplingList[0])
     return samplingList
     
 def shuffleSampList(samplingList): # 模擬特徵值互換後的結果
@@ -581,7 +578,7 @@ if __name__=='__main__':
         LOOPNUM = 50 # 解釋資料數量
         DATASET = 0 # 選擇資料集
         DS_NAME = ['adult', 'airline', 'breast', 'diabetes', 'heart', 'iris']
-        EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
+        EXPLAIN_DATA = 1 # 選擇要解釋第幾筆資料(單筆解釋)
         MODE = 6 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6, 隨機費氏:7, 倍數費氏:8
         COMP_MODE = 6
         ROUND = 50 # 要計算幾次
@@ -640,7 +637,6 @@ if __name__=='__main__':
                     samplingList_bin = toBinList(samplingList)
                     LOSS_LIMIT = getLOSS()
 
-            if MODE == COMP_MODE or MODE == 7: ROUND = 1
             mainFunc()
             EXPLAIN_DATA += 1
             
