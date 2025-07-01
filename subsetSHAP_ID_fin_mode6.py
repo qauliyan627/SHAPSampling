@@ -576,7 +576,7 @@ if __name__=='__main__':
     for simTime in range(SIMTIMES):
         DATETIME_START = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=8)))
         LOOPNUM = 50 # 解釋資料數量
-        DATASET = 0 # 選擇資料集
+        DATASET = 1 # 選擇資料集
         DS_NAME = ['adult', 'airline', 'breast', 'diabetes', 'heart', 'iris']
         EXPLAIN_DATA = 1 # 選擇要解釋第幾筆資料(單筆解釋)
         MODE = 6 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6, 隨機費氏:7, 倍數費氏:8

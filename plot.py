@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-DS_ID = 0
+DS_ID = 1
 DS_NAME = ['adult', 'airline', 'breast', 'diabetes', 'heart', 'iris', 'IEAClassification']
 DS_SAMPNUM = [56, 88, 120, 68, 44]
 MODE4_SAMP = [40, 62, 86, 48, 32]
 SIM_TIME = 0
-MODE = 7
+MODE = 4
 COMP_MODE = 6
 ROUND = 50
 SAMP = DS_SAMPNUM[DS_ID]
