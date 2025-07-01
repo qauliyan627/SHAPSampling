@@ -387,7 +387,6 @@ def randomMultipleFib(samplingNum): #mode8: 隨機倍數費氏 + 低差異 + 配
     return tempList
 
 def sampling(sampling_num, mode=0): # 選擇抽樣方法
-    time_start = time.time() # 開始計算時間
     if sampling_num == "COMP_MODE":
         mode = COMP_MODE
         if mode==6: sampling_num=SAMPLING_NUM
@@ -411,12 +410,30 @@ def sampling(sampling_num, mode=0): # 選擇抽樣方法
         samplingList = randomMultipleFib(sampling_num)
     logging.info("結束抽樣")
 
-    time_end = time.time() # 抽樣結束時間
     samplingList.sort()
     if len(samplingList) > sampling_num: 
         logging.warning("len(samplingList) > sampling_num")
         logging.warning(f"samplingList={samplingList}")
+    samplingList = shuffleSampList(samplingList)
     return samplingList
+    
+def shuffleSampList(samplingList): # 模擬特徵值互換後的結果
+    # 轉成二進位
+    tempList = []
+    samplingList_bin = toBinList(samplingList)
+    lenOfSampList = len(samplingList_bin[0])
+    for _ in range(50): # 決定互換次數 + 哪兩列互換
+        index1 = random.randint(0,lenOfSampList-1)
+        index2 = random.randint(0,lenOfSampList-1)
+        if index1 == index2: continue
+        temp = samplingList_bin[index1]
+        samplingList_bin[index1] = samplingList_bin[index2]
+        samplingList_bin[index2] = temp
+    # 轉回10進制
+    for i in samplingList_bin:
+        bin_str = ''.join(i)
+        tempList.append(int(bin_str, 2))
+    return tempList
     
 def getSpac(spList): # 取得抽樣結果中各元素的距離
     spacList = []
@@ -559,12 +576,12 @@ if __name__=='__main__':
     for simTime in range(SIMTIMES):
         DATETIME_START = datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=8)))
         LOOPNUM = 50 # 解釋資料數量
-        DATASET = 0 # 選擇資料集
-        DS_NAME = ['adult', 'airline', 'breast', 'diabetes', 'heart', 'iris']
+        DATASET = 6 # 選擇資料集
+        DS_NAME = ['adult', 'airline', 'breast', 'diabetes', 'heart', 'iris', 'IEAClassification']
         EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
         MODE = 5 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6, 隨機費氏:7, 倍數費氏:8
         COMP_MODE = 6
-        ROUND = 1 # 要計算幾次
+        ROUND = 50 # 要計算幾次
         GOLDEN_RATIO = (5**0.5 - 1)/2
         DATASET_LOC = f"SHAPSampling\\Datasets\\{DS_NAME[DATASET]}\\"
         LOCATION = f"SHAPSampling\\result_data\\{DS_NAME[DATASET]}\\simTime{simTime}\\mode{MODE}"
@@ -620,7 +637,6 @@ if __name__=='__main__':
                     samplingList_bin = toBinList(samplingList)
                     LOSS_LIMIT = getLOSS()
 
-            if MODE == COMP_MODE or MODE == 7: ROUND = 1
             mainFunc()
             EXPLAIN_DATA += 1
             

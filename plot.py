@@ -12,7 +12,7 @@ DS_NAME = ['adult', 'airline', 'breast', 'diabetes', 'heart', 'iris', 'IEAClassi
 DS_SAMPNUM = [56, 88, 120, 68, 44]
 MODE4_SAMP = [40, 62, 86, 48, 32]
 SIM_TIME = 0
-MODE = 4
+MODE = 7
 COMP_MODE = 6
 ROUND = 50
 SAMP = DS_SAMPNUM[DS_ID]
@@ -32,7 +32,7 @@ def getL2(numList):
         
 def get_AllLossList_L2():# 計算AllLossList的L2
     simTime = SIM_TIME
-    i = 0
+    i = 1
     avgL2 = 0
     loss = 0
     while True:
@@ -46,7 +46,6 @@ def get_AllLossList_L2():# 計算AllLossList的L2
             
             avgL2 += loss**2
             loss = 0
-            i+=1
         else:
             avgL2 = math.sqrt(avgL2)
             print("dataset:", DS_NAME[DS_ID], "MODE:", MODE, "simTime:", simTime, "avgL2 =", my_round(avgL2, 3))
@@ -54,6 +53,8 @@ def get_AllLossList_L2():# 計算AllLossList的L2
             avgL2 = 0
             loss = 0
             simTime+=1
+        
+        i+=1
         if not os.path.exists(LOCATION + f"\\simTime{simTime}"): break
 
 def get_OneLossList_L2(i):# 計算單筆AllLossList的L2
