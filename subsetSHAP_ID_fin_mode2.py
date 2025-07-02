@@ -579,7 +579,7 @@ if __name__=='__main__':
         DATASET = 6 # 選擇資料集
         DS_NAME = ['adult', 'airline', 'breast', 'diabetes', 'heart', 'iris', 'IEAClassification']
         EXPLAIN_DATA = 0 # 選擇要解釋第幾筆資料(單筆解釋)
-        MODE = 4 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6, 隨機費氏:7, 倍數費氏:8
+        MODE = 2 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6, 隨機費氏:7, 倍數費氏:8
         COMP_MODE = 6
         ROUND = 50 # 要計算幾次
         GOLDEN_RATIO = (5**0.5 - 1)/2

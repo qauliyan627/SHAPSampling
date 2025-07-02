@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-DS_ID = 1
+DS_ID = 2
 DS_NAME = ['adult', 'airline', 'breast', 'diabetes', 'heart', 'iris', 'IEAClassification']
-DS_SAMPNUM = [56, 88, 120, 68, 44]
-MODE4_SAMP = [40, 62, 86, 48, 32]
+DS_SAMPNUM = [56, 88, 120, 68, 44, 0, 116]
+MODE4_SAMP = [40, 62, 86, 48, 32, 0, 84]
 SIM_TIME = 0
-MODE = 7
+MODE = 6 # 隨機方法:0, 隨機配對抽樣:1, Sobol:2, Halton:3, 凸型費氏:4, 低差異費氏配對:5, 凸型費氏+:6, 隨機費氏:7, 倍數費氏:8
 COMP_MODE = 6
 ROUND = 50
 SAMP = DS_SAMPNUM[DS_ID]
