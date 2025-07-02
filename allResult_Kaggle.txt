@@ -1,7 +1,11 @@
 - Iris Species #5
 - Heart Failure Prediction Dataset #11 
 - Adult Census Income #14
+- Lung Cancer Dataset #15
 - Diabetes Dataset 2019 #17 #https://www.kaggle.com/datasets/tigganeha4/diabetes-dataset-2019
 - Airline Passenger Satisfaction #22
 - Introvert, Extrovert & Ambivert Classification #29
+- Predict the Age of a Trilobite Fossil #29
 - Breast Cancer Dataset #31
+
+- Student Habits and Academic Performance Dataset
