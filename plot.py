@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-DS_ID = 2
+DS_ID = 0
 DS_NAME = ['adult', 'airline', 'breast', 'diabetes', 'heart', 'iris', 'IEAClassification']
 DS_SAMPNUM = [56, 88, 120, 68, 44, 0, 116]
 MODE4_SAMP = [40, 62, 86, 48, 32, 0, 84]
@@ -149,5 +149,5 @@ def SHAPvalL2_AllListLayerL2_scatter():
         plt.show()
         simTime+=1
 
-get_AllLossList_L2()
-# SHAPvalL2_sampListGapL2_scatter()
+# get_AllLossList_L2()
+SHAPvalL2_sampListGapL2_scatter()
